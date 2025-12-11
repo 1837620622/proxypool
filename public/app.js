@@ -166,6 +166,44 @@ document.addEventListener('DOMContentLoaded', () => {
     exportEliteBtn.addEventListener('click', exportEliteProxies);
 
     // ============================================================
+    // 侧边栏导航
+    // ============================================================
+    let currentTab = 'dashboard';
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tab = item.getAttribute('data-tab');
+            if (tab === currentTab) return;
+            
+            // 更新激活状态
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            currentTab = tab;
+            
+            // 根据选项卡切换数据源
+            switch(tab) {
+                case 'elite':
+                    speedFilter.value = 'fast';
+                    applyFilters();
+                    break;
+                case 'normal':
+                    speedFilter.value = '';
+                    applyFilters();
+                    break;
+                case 'all':
+                case 'dashboard':
+                default:
+                    speedFilter.value = '';
+                    countryFilter.value = '';
+                    protocolFilter.value = '';
+                    searchInput.value = '';
+                    applyFilters();
+                    break;
+            }
+        });
+    });
+
+    // ============================================================
     // 语言切换
     // ============================================================
     function setLanguage(lang) {
