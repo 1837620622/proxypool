@@ -240,12 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // 根据选项卡切换数据源
             switch(tab) {
                 case 'elite':
-                    speedFilter.value = 'fast';
-                    applyFilters();
+                    fetchData('/api/elite');
                     break;
                 case 'normal':
-                    speedFilter.value = '';
-                    applyFilters();
+                    fetchData('/api/normal');
                     break;
                 case 'all':
                 case 'dashboard':
@@ -254,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     countryFilter.value = '';
                     protocolFilter.value = '';
                     searchInput.value = '';
-                    applyFilters();
+                    fetchData('/api/proxies');
                     break;
             }
         });
@@ -288,20 +286,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // 数据获取
     // ============================================================
-    async function fetchData() {
+    async function fetchData(endpoint = '/api/proxies') {
         try {
             const res = await fetch('/api/stats');
             const stats = await res.json();
             
             updateStats(stats);
             
-            if (proxies.length === 0 || stats.total !== proxies.length) {
-                const listRes = await fetch('/api/proxies');
-                const listData = await listRes.json();
-                proxies = listData.data || [];
-                populateFilters(stats.countries);
-                applyFilters();
-            }
+            const listRes = await fetch(endpoint);
+            const listData = await listRes.json();
+            proxies = listData.data || [];
+            populateFilters(stats.countries);
+            applyFilters();
         } catch (err) {
             console.error('Failed to fetch data', err);
         }
