@@ -127,9 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportSocks5Btn = document.getElementById('export-socks5');
     const exportEliteBtn = document.getElementById('export-elite');
     const exportAllBtn = document.getElementById('export-all');
-    const apiDocsPage = document.getElementById('api-docs-page');
-    const mainDashboard = document.querySelector('.main-content:not(.api-docs-page)');
-    const progressSection = document.getElementById('progress-section');
+        const progressSection = document.getElementById('progress-section');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
     const checkBtn = document.getElementById('check-btn');
@@ -194,27 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 根据选项卡切换数据源
             switch(tab) {
-                case 'api':
-                    mainDashboard.classList.add('hidden');
-                    apiDocsPage.classList.remove('hidden');
-                    break;
                 case 'elite':
-                    mainDashboard.classList.remove('hidden');
-                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = 'fast';
                     applyFilters();
                     break;
                 case 'normal':
-                    mainDashboard.classList.remove('hidden');
-                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = '';
                     applyFilters();
                     break;
                 case 'all':
                 case 'dashboard':
                 default:
-                    mainDashboard.classList.remove('hidden');
-                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = '';
                     countryFilter.value = '';
                     protocolFilter.value = '';
