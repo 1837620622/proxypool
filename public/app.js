@@ -110,12 +110,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportTxtBtn = document.getElementById('export-txt');
     const exportJsonBtn = document.getElementById('export-json');
     const copyAllBtn = document.getElementById('copy-all');
+    const progressModal = document.getElementById('progress-modal');
+    const progressText = document.getElementById('progress-text');
+    const progressBarFill = document.getElementById('progress-bar-fill');
 
     // ============================================================
     // 初始化
     // ============================================================
     fetchData();
-    setInterval(fetchData, 5000);
+    // 动态调整轮询间隔，初始为5s
+    let pollInterval = 5000;
+    let pollTimer = setTimeout(pollData, pollInterval);
+
+    function pollData() {
+        fetchData().finally(() => {
+            pollTimer = setTimeout(pollData, pollInterval);
+        });
+    }
+
     setLanguage(currentLang);
 
     // ============================================================

@@ -202,6 +202,20 @@
     <!-- Toast Notification -->
     <div id="toast" class="toast hidden" data-i18n="copied">Copied to clipboard!</div>
 
+    <!-- 进度弹窗 -->
+    <div id="progress-modal" class="progress-modal hidden">
+        <div class="progress-content">
+            <div class="progress-header">
+                <i class="ri-loader-4-line spin"></i>
+                <span data-i18n="updating">Updating...</span>
+            </div>
+            <div class="progress-text" id="progress-text">0/0 (0%)</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

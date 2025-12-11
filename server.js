@@ -249,9 +249,9 @@ const QUALITY_CONFIG = {
     maxLatency: 5000,        // 最大延迟阈值(ms) - 放宽
     fastLatency: 800,        // 快速代理阈值(ms) - 放宽
     goodLatency: 1500,       // 良好代理阈值(ms) - 放宽
-    timeout: 5000,           // 检测超时时间(ms) - 大幅增加以适应 Railway 网络
-    batchSize: 50,           // 并发批次大小 - 降低并发避免拥塞
-    batchDelay: 200          // 批次间延迟(ms) - 增加间隔
+    timeout: 3000,           // 检测超时时间(ms) - 优化速度
+    batchSize: 200,          // 并发批次大小 - 提高并发
+    batchDelay: 50           // 批次间延迟(ms) - 减少等待
 };
 
 // ============================================================
