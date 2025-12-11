@@ -111,6 +111,17 @@ async function loadData() {
     return false;
 }
 
+// CORS 支持 - 允许浏览器插件跨域请求
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(express.json());
 
