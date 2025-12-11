@@ -88,6 +88,29 @@ docker run -d -p 3000:3000 --name proxypool proxypool
 
 > ⚠️ **注意**: Vercel 免费版有执行时间限制，建议使用 Railway 部署以获得更好体验
 
+### 🗄️ 配置数据持久化（推荐）
+
+Railway 使用临时文件系统，每次部署后检测结果会丢失。配置 **Upstash Redis**（免费）可持久化存储检测结果：
+
+1. 访问 [Upstash](https://upstash.com) 注册免费账号
+2. 创建一个 Redis 数据库
+3. 复制 REST URL 和 Token
+4. 在 Railway 中添加环境变量：
+
+```bash
+# 使用 Railway CLI
+railway variables --set "UPSTASH_REDIS_REST_URL=你的URL" --set "UPSTASH_REDIS_REST_TOKEN=你的Token"
+```
+
+或在 Railway 控制台 → Variables 中手动添加：
+
+| 变量名 | 说明 |
+|--------|------|
+| `UPSTASH_REDIS_REST_URL` | Upstash REST API URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash REST API Token |
+
+配置后，检测结果会自动保存到 Redis，服务重启后自动加载，避免重复检测。
+
 ---
 
 ## 📡 API 接口
