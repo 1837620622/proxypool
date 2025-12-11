@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
             exportElite: 'Elite All',
             apiDocs: 'API Docs',
             dashboard: 'Dashboard',
-            allProxies: 'All Proxies'
+            allProxies: 'All Proxies',
+            nextCheck: 'Next Check'
         },
         zh: {
             title: '代理池',
@@ -83,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
             exportElite: '高速匿名',
             apiDocs: 'API 文档',
             dashboard: '仪表盘',
-            allProxies: '全部代理'
+            allProxies: '全部代理',
+            nextCheck: '下次检测'
         }
     };
 
@@ -132,6 +134,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
     const statusCard = document.querySelector('.stat-card.status');
+    const countdownTime = document.getElementById('countdown-time');
+
+    // ============================================================
+    // 倒计时逻辑 (每15分钟检测一次)
+    // ============================================================
+    let countdownInterval = null;
+    
+    function updateCountdown() {
+        const now = new Date();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        
+        // 计算距离下一个15分钟的时间
+        const nextCheck = 15 - (minutes % 15);
+        const remainingSeconds = (nextCheck - 1) * 60 + (60 - seconds);
+        
+        const mins = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        
+        countdownTime.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // 每秒更新倒计时
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
 
     // ============================================================
     // 初始化
