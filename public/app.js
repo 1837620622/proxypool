@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ready: 'Ready',
             updating: 'Updating...',
             refreshPool: 'Refresh',
+            checkProxies: 'Check',
             country: 'Country',
             protocol: 'Protocol',
             speed: 'Speed',
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ready: '就绪',
             updating: '更新中...',
             refreshPool: '刷新',
+            checkProxies: '检测',
             country: '国家',
             protocol: '协议',
             speed: '速度',
@@ -113,6 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressModal = document.getElementById('progress-modal');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
+    const checkBtn = document.getElementById('check-btn');
+    
+    // 检测状态
+    let isChecking = false;
+    let checkPollTimer = null;
 
     // ============================================================
     // 初始化
@@ -134,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 事件监听
     // ============================================================
     refreshBtn.addEventListener('click', triggerRefresh);
+    checkBtn.addEventListener('click', triggerCheck);
     countryFilter.addEventListener('change', applyFilters);
     protocolFilter.addEventListener('change', applyFilters);
     speedFilter.addEventListener('change', applyFilters);
@@ -203,6 +211,60 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Failed to refresh', err);
         }
+    }
+
+    // ============================================================
+    // 手动检测代理
+    // ============================================================
+    async function triggerCheck() {
+        if (isChecking) return;
+        try {
+            const res = await fetch('/api/check', { method: 'POST' });
+            if (res.ok) {
+                isChecking = true;
+                checkBtn.disabled = true;
+                progressModal.classList.remove('hidden');
+                progressText.textContent = 'Starting check...';
+                progressBarFill.style.width = '0%';
+                // 开始轮询检测进度
+                pollCheckProgress();
+            }
+        } catch (err) {
+            console.error('Failed to start check', err);
+        }
+    }
+
+    // ============================================================
+    // 轮询检测进度
+    // ============================================================
+    function pollCheckProgress() {
+        if (checkPollTimer) clearTimeout(checkPollTimer);
+        
+        fetch('/api/check-progress')
+            .then(res => res.json())
+            .then(data => {
+                if (data.checking) {
+                    const percent = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
+                    progressText.textContent = `Checking: ${data.current}/${data.total} (${percent}%)`;
+                    progressBarFill.style.width = `${percent}%`;
+                    // 继续轮询
+                    checkPollTimer = setTimeout(pollCheckProgress, 500);
+                } else {
+                    // 检测完成
+                    isChecking = false;
+                    checkBtn.disabled = false;
+                    progressModal.classList.add('hidden');
+                    showToast(currentLang === 'zh' ? '检测完成！' : 'Check completed!');
+                    // 刷新数据
+                    fetchData();
+                }
+            })
+            .catch(err => {
+                console.error('Failed to get check progress', err);
+                isChecking = false;
+                checkBtn.disabled = false;
+                progressModal.classList.add('hidden');
+            });
     }
 
     // ============================================================

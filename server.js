@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 3000;
 // Store proxies in memory
 let proxyPool = [];
 let isUpdating = false;
+let isChecking = false;  // 检测状态
+let checkProgress = { current: 0, total: 0 };  // 检测进度
 let systemLogs = []; // 系统日志
 
 function addLog(type, message) {
@@ -387,6 +389,73 @@ app.post('/api/refresh', (req, res) => {
     updatePool(); // Start in background
     res.json({ message: 'Update started' });
 });
+
+// ============================================================
+// 手动检测代理存活性 API
+// ============================================================
+app.post('/api/check', async (req, res) => {
+    if (isChecking) {
+        return res.status(409).json({ message: 'Check already in progress' });
+    }
+    if (proxyPool.length === 0) {
+        return res.status(400).json({ message: 'No proxies to check' });
+    }
+    
+    // 后台开始检测
+    checkProxies();
+    res.json({ message: 'Check started', total: proxyPool.length });
+});
+
+// 获取检测进度
+app.get('/api/check-progress', (req, res) => {
+    res.json({
+        checking: isChecking,
+        current: checkProgress.current,
+        total: checkProgress.total
+    });
+});
+
+// ============================================================
+// 后台检测代理存活性
+// ============================================================
+async function checkProxies() {
+    if (isChecking) return;
+    isChecking = true;
+    checkProgress = { current: 0, total: proxyPool.length };
+    addLog('INFO', `开始检测 ${proxyPool.length} 个代理...`);
+    
+    const { batchSize, batchDelay } = QUALITY_CONFIG;
+    const checkedProxies = [];
+    
+    for (let i = 0; i < proxyPool.length; i += batchSize) {
+        const batch = proxyPool.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map(p => checkProxy(p)));
+        checkedProxies.push(...results);
+        checkProgress.current = Math.min(i + batchSize, proxyPool.length);
+        
+        // 进度日志
+        if ((i / batchSize) % 10 === 0) {
+            console.log(`检测进度: ${checkProgress.current}/${checkProgress.total} (${Math.round(checkProgress.current/checkProgress.total*100)}%)`);
+        }
+        
+        await new Promise(r => setTimeout(r, batchDelay));
+    }
+    
+    // 按质量评分排序，存活的优先
+    checkedProxies.sort((a, b) => {
+        if (a.alive !== b.alive) return b.alive ? 1 : -1;
+        if (b.quality !== a.quality) return b.quality - a.quality;
+        return a.latency - b.latency;
+    });
+    
+    proxyPool = checkedProxies;
+    
+    const aliveCount = proxyPool.filter(p => p.alive).length;
+    const fastCount = proxyPool.filter(p => p.speed === 'fast').length;
+    addLog('INFO', `检测完成！${aliveCount} 个存活，${fastCount} 个快速代理`);
+    
+    isChecking = false;
+}
 
 app.get('/api/stats', (req, res) => {
     const countries = [...new Set(proxyPool.map(p => p.country))];
