@@ -7,9 +7,22 @@ const net = require('net');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const { Redis } = require('@upstash/redis');
 
-// 数据持久化文件路径
+// 数据持久化：优先使用 Upstash Redis，否则使用本地文件
 const DATA_FILE = path.join(process.cwd(), 'proxy_data.json');
+let redis = null;
+
+// 如果配置了 Upstash Redis 环境变量，则使用 Redis
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN
+    });
+    console.log('[INFO] 使用 Upstash Redis 存储数据');
+} else {
+    console.log('[INFO] 未配置 Redis，使用本地文件存储');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,23 +47,53 @@ function addLog(type, message) {
 // ============================================================
 // 数据持久化：保存和加载检测结果
 // ============================================================
-function saveData() {
-    try {
-        const data = {
-            proxyPool,
-            eliteProxies,
-            normalProxies,
-            lastCheckTime,
-            savedAt: new Date().toISOString()
-        };
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        addLog('INFO', `数据已保存到文件，共 ${proxyPool.length} 个代理`);
-    } catch (err) {
-        addLog('ERROR', `保存数据失败: ${err.message}`);
+async function saveData() {
+    const data = {
+        eliteProxies,
+        normalProxies,
+        lastCheckTime,
+        savedAt: new Date().toISOString()
+    };
+    
+    // 优先使用 Redis
+    if (redis) {
+        try {
+            await redis.set('proxy_data', JSON.stringify(data));
+            addLog('INFO', `数据已保存到 Redis，${eliteProxies.length} 个高速匿名，${normalProxies.length} 个普通代理`);
+        } catch (err) {
+            addLog('ERROR', `保存到 Redis 失败: ${err.message}`);
+        }
+    } else {
+        // 本地文件存储
+        try {
+            data.proxyPool = proxyPool;
+            fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+            addLog('INFO', `数据已保存到文件，共 ${proxyPool.length} 个代理`);
+        } catch (err) {
+            addLog('ERROR', `保存数据失败: ${err.message}`);
+        }
     }
 }
 
-function loadData() {
+async function loadData() {
+    // 优先从 Redis 加载
+    if (redis) {
+        try {
+            const raw = await redis.get('proxy_data');
+            if (raw) {
+                const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                eliteProxies = data.eliteProxies || [];
+                normalProxies = data.normalProxies || [];
+                lastCheckTime = data.lastCheckTime ? new Date(data.lastCheckTime) : null;
+                addLog('INFO', `从 Redis 加载数据成功，${eliteProxies.length} 个高速匿名，${normalProxies.length} 个普通代理`);
+                return true;
+            }
+        } catch (err) {
+            addLog('ERROR', `从 Redis 加载失败: ${err.message}`);
+        }
+    }
+    
+    // 本地文件存储
     try {
         if (fs.existsSync(DATA_FILE)) {
             const raw = fs.readFileSync(DATA_FILE, 'utf-8');
@@ -397,20 +440,25 @@ async function updatePool() {
 }
 
 // 启动时先尝试加载已保存的数据
-const hasData = loadData();
-
-// 如果没有已保存的数据，则从源获取
-if (!hasData) {
+(async () => {
+    const hasData = await loadData();
+    
+    // 从源获取代理（无论是否有缓存数据都获取最新代理）
     updatePool();
-}
-
-// 启动后 30 秒开始首次检测（等待代理池加载完成）
-setTimeout(() => {
-    if (!isChecking && proxyPool.length > 0 && eliteProxies.length === 0) {
-        addLog('INFO', '启动后自动检测开始...');
-        checkProxies();
+    
+    // 如果已有检测结果，跳过首次检测
+    if (hasData && eliteProxies.length > 0) {
+        addLog('INFO', '已从缓存加载检测结果，跳过首次检测');
+    } else {
+        // 启动后 60 秒开始首次检测（等待代理池加载完成）
+        setTimeout(() => {
+            if (!isChecking && proxyPool.length > 0 && eliteProxies.length === 0) {
+                addLog('INFO', '启动后自动检测开始...');
+                checkProxies();
+            }
+        }, 60000);
     }
-}, 30000);
+})();
 
 // Schedule update every 1 hour
 cron.schedule('0 * * * *', () => {
