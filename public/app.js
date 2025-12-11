@@ -491,55 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // 导出功能
-    // ============================================================
-    function updateApiUrl() {
-        const protocol = protocolFilter.value;
-        const speed = speedFilter.value;
-        const limit = exportLimit.value;
-        
-        let url = '/api/export?';
-        const params = [];
-        if (protocol) params.push(`protocol=${protocol}`);
-        if (speed) params.push(`speed=${speed}`);
-        params.push(`limit=${limit}`);
-        
-        document.getElementById('api-url').textContent = url + params.join('&');
-    }
-
-    function exportProxies(format) {
-        const protocol = protocolFilter.value;
-        const speed = speedFilter.value;
-        const limit = exportLimit.value;
-        const country = countryFilter.value;
-        
-        let url = `/api/export?format=${format}&limit=${limit}`;
-        if (protocol) url += `&protocol=${protocol}`;
-        if (speed) url += `&speed=${speed}`;
-        if (country) url += `&country=${country}`;
-        
-        window.open(url, '_blank');
-    }
-
-    function copyAllProxies() {
-        const limit = parseInt(exportLimit.value);
-        const proxyText = filteredProxies.slice(0, limit)
-            .map(p => `${p.ip}:${p.port}`)
-            .join('\n');
-        
-        navigator.clipboard.writeText(proxyText).then(() => {
-            showToast();
-        });
-    }
-
-    // ============================================================
-    // 导出全部高速匿名代理
-    // ============================================================
-    function exportEliteProxies() {
-        window.open('/api/elite?limit=all', '_blank');
-    }
-
-    // ============================================================
     // 工具函数
     // ============================================================
     window.copyToClipboard = (text) => {
@@ -554,8 +505,4 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.classList.add('hidden');
         }, 2000);
     }
-
-    // 初始化API URL
-    updateApiUrl();
-    exportLimit.addEventListener('change', updateApiUrl);
 });
