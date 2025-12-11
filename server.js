@@ -158,7 +158,27 @@ const PROXY_SOURCES = {
     }
 };
 
-// ... (保持 parseTextProxies 不变)
+// ============================================================
+// 解析纯文本格式的代理列表 (IP:Port)
+// ============================================================
+function parseTextProxies(text, protocol) {
+    const lines = text.split('\n').filter(line => line.trim());
+    return lines.map(line => {
+        const parts = line.trim().split(':');
+        if (parts.length >= 2) {
+            return {
+                ip: parts[0],
+                port: parseInt(parts[1], 10),
+                protocol: protocol,
+                country: 'Unknown',
+                anonymity: 'Unknown',
+                speed: 0,
+                source: 'text'
+            };
+        }
+        return null;
+    }).filter(p => p !== null && !isNaN(p.port));
+}
 
 // ============================================================
 // 从单个源获取代理
@@ -234,7 +254,55 @@ const QUALITY_CONFIG = {
     batchDelay: 200          // 批次间延迟(ms) - 增加间隔
 };
 
-// ... (checkProxy 保持不变)
+// ============================================================
+// 检测代理是否存活 (优化速度版)
+// ============================================================
+async function checkProxy(proxy) {
+    const host = proxy.ip;
+    const port = proxy.port;
+
+    const tcpStart = Date.now();
+    try {
+        await new Promise((resolve, reject) => {
+            const socket = new net.Socket();
+            socket.setTimeout(QUALITY_CONFIG.timeout);
+            socket.connect(port, host, () => {
+                socket.destroy();
+                resolve();
+            });
+            socket.on('error', (err) => reject(err));
+            socket.on('timeout', () => {
+                socket.destroy();
+                reject(new Error('Timeout'));
+            });
+        });
+        
+        const latency = Date.now() - tcpStart;
+        
+        // 只保留延迟在阈值内的优质代理
+        if (latency > QUALITY_CONFIG.maxLatency) {
+            return { ...proxy, alive: false, error: 'Too slow', last_checked: new Date() };
+        }
+        
+        // 计算质量评分 (0-100)
+        let quality = 100;
+        if (latency > QUALITY_CONFIG.fastLatency) {
+            quality = Math.max(0, 100 - Math.floor((latency - QUALITY_CONFIG.fastLatency) / 25));
+        }
+        
+        return { 
+            ...proxy, 
+            alive: true, 
+            latency, 
+            quality,
+            speed: latency < QUALITY_CONFIG.fastLatency ? 'fast' : 
+                   latency < QUALITY_CONFIG.goodLatency ? 'good' : 'slow',
+            last_checked: new Date() 
+        };
+    } catch (e) {
+        return { ...proxy, alive: false, error: e.message, last_checked: new Date() };
+    }
+}
 
 // ... (updatePool 保持不变，但日志调用替换)
 
