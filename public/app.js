@@ -7,10 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
             title: 'Proxy Pool',
             subtitle: 'High Quality Free Proxies',
             totalProxies: 'Total Proxies',
-            fastProxies: 'Fast Proxies',
-            lastUpdated: 'Last Updated',
+            eliteProxies: 'Elite Proxies',
+            normalProxies: 'Normal Proxies',
             status: 'Status',
             ready: 'Ready',
+            checking: 'Checking...',
             updating: 'Updating...',
             refreshPool: 'Refresh',
             checkProxies: 'Check',
@@ -38,16 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
             exportCount: 'Count:',
             copyAll: 'Copy All',
             exportAll: 'All',
-            exportFast: 'Fast All'
+            exportElite: 'Elite All'
         },
         zh: {
             title: '代理池',
             subtitle: '高质量免费代理',
             totalProxies: '代理总数',
-            fastProxies: '快速代理',
-            lastUpdated: '上次更新',
+            eliteProxies: '高速匿名',
+            normalProxies: '普通代理',
             status: '状态',
             ready: '就绪',
+            checking: '检测中...',
             updating: '更新中...',
             refreshPool: '刷新',
             checkProxies: '检测',
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             exportCount: '数量:',
             copyAll: '复制全部',
             exportAll: '全部',
-            exportFast: '快速全部'
+            exportElite: '高速匿名'
         }
     };
 
@@ -96,8 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     const proxyList = document.getElementById('proxy-list');
     const totalCount = document.getElementById('total-count');
-    const fastCount = document.getElementById('fast-count');
-    const lastUpdated = document.getElementById('last-updated');
+    const eliteCount = document.getElementById('elite-count');
+    const normalCount = document.getElementById('normal-count');
+    const lastCheckTime = document.getElementById('last-check-time');
     const statusIndicator = document.getElementById('status-indicator');
     const statusIcon = document.getElementById('status-icon');
     const refreshBtn = document.getElementById('refresh-btn');
@@ -116,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportTxtBtn = document.getElementById('export-txt');
     const exportJsonBtn = document.getElementById('export-json');
     const copyAllBtn = document.getElementById('copy-all');
-    const exportFastBtn = document.getElementById('export-fast');
+    const exportEliteBtn = document.getElementById('export-elite');
     const progressModal = document.getElementById('progress-modal');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
@@ -161,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     exportTxtBtn.addEventListener('click', () => exportProxies('txt'));
     exportJsonBtn.addEventListener('click', () => exportProxies('json'));
     copyAllBtn.addEventListener('click', copyAllProxies);
-    exportFastBtn.addEventListener('click', exportFastProxies);
+    exportEliteBtn.addEventListener('click', exportEliteProxies);
 
     // ============================================================
     // 语言切换
@@ -278,20 +281,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     function updateStats(stats) {
         totalCount.textContent = stats.total || 0;
-        fastCount.textContent = stats.quality?.fast || 0;
+        eliteCount.textContent = stats.elite || 0;
+        normalCount.textContent = stats.normal || 0;
         isUpdating = stats.updating;
+        isChecking = stats.checking;
         
-        if (isUpdating) {
+        // 更新上次检测时间
+        if (stats.lastCheckTime) {
+            const checkTime = new Date(stats.lastCheckTime);
+            lastCheckTime.textContent = checkTime.toLocaleTimeString();
+        } else {
+            lastCheckTime.textContent = '-';
+        }
+        
+        if (isChecking) {
+            statusIndicator.textContent = i18n[currentLang].checking;
+            statusIcon.style.background = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+            document.getElementById('status-icon-i').className = 'ri-loader-4-line spin';
+            checkBtn.disabled = true;
+            
+            // 显示检测进度
+            if (stats.checkProgress) {
+                const { current, total } = stats.checkProgress;
+                const percent = total > 0 ? Math.round((current / total) * 100) : 0;
+                progressModal.classList.remove('hidden');
+                progressText.textContent = `${current}/${total} (${percent}%)`;
+                progressBarFill.style.width = `${percent}%`;
+            }
+        } else if (isUpdating) {
             statusIndicator.textContent = i18n[currentLang].updating;
             statusIcon.style.background = 'linear-gradient(135deg, #eab308, #ca8a04)';
-            document.getElementById('status-icon-i').className = 'ri-loader-4-line';
+            document.getElementById('status-icon-i').className = 'ri-loader-4-line spin';
             refreshBtn.disabled = true;
         } else {
             statusIndicator.textContent = i18n[currentLang].ready;
             statusIcon.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
             document.getElementById('status-icon-i').className = 'ri-checkbox-circle-line';
             refreshBtn.disabled = false;
-            lastUpdated.textContent = new Date().toLocaleTimeString();
+            checkBtn.disabled = false;
+            progressModal.classList.add('hidden');
         }
     }
 
@@ -464,10 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // 导出全部快速代理
+    // 导出全部高速匿名代理
     // ============================================================
-    function exportFastProxies() {
-        window.open('/api/export?speed=fast&limit=all', '_blank');
+    function exportEliteProxies() {
+        window.open('/api/elite?limit=all', '_blank');
     }
 
     // ============================================================

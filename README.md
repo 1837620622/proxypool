@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Proxies-30000+-brightgreen?style=for-the-badge" alt="Proxies">
+  <img src="https://img.shields.io/badge/Proxies-45000+-brightgreen?style=for-the-badge" alt="Proxies">
   <img src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white" alt="Railway">
   <img src="https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
 </p>
@@ -28,6 +28,8 @@
 | 🧹 **智能去重** | 基于 IP:Port 自动去重，避免重复 |
 | ⚡ **存活检测** | TCP 连接检测，过滤无效代理 |
 | 📊 **质量评分** | 根据延迟自动评估代理质量 (Fast/Good/Slow) |
+| 👑 **高速匿名** | 自动分类高速匿名代理和普通代理 |
+| ⏰ **自动检测** | 每 15 分钟自动检测代理存活性 |
 | 🌍 **多协议支持** | HTTP、HTTPS、SOCKS4、SOCKS5 |
 | 🎨 **美观界面** | 现代化暗黑风格 Web 仪表盘 |
 | 🌐 **中英双语** | 支持中文/英文界面切换 |
@@ -180,6 +182,34 @@ GET /api/check-progress
   "total": 45000
 }
 ```
+
+### 获取高速匿名代理
+
+```
+GET /api/elite
+```
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| protocol | string | 协议筛选 |
+| limit | string | 导出数量，支持数字或 `all` |
+
+**示例:**
+```bash
+# 获取全部高速匿名代理
+curl "http://localhost:3000/api/elite?limit=all"
+```
+
+### 获取普通代理
+
+```
+GET /api/normal
+```
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| protocol | string | 协议筛选 |
+| limit | string | 导出数量，支持数字或 `all` |
 
 ---
 

@@ -11,11 +11,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Store proxies in memory
-let proxyPool = [];
+let proxyPool = [];           // 所有代理
+let eliteProxies = [];        // 高速匿名代理 (存活+快速+匿名)
+let normalProxies = [];       // 普通代理
 let isUpdating = false;
-let isChecking = false;  // 检测状态
+let isChecking = false;       // 检测状态
 let checkProgress = { current: 0, total: 0 };  // 检测进度
-let systemLogs = []; // 系统日志
+let lastCheckTime = null;     // 上次检测时间
+let systemLogs = [];          // 系统日志
 
 function addLog(type, message) {
     const log = `[${new Date().toISOString()}] [${type}] ${message}`;
@@ -355,9 +358,17 @@ async function updatePool() {
 // Initial update
 updatePool();
 
-// Schedule update every 1 hour (适配 Cloudflare 部署)
+// Schedule update every 1 hour
 cron.schedule('0 * * * *', () => {
     updatePool();
+});
+
+// Schedule auto check every 15 minutes (自动检测)
+cron.schedule('*/15 * * * *', () => {
+    if (!isChecking && proxyPool.length > 0) {
+        addLog('INFO', '定时自动检测开始...');
+        checkProxies();
+    }
 });
 
 // API Endpoints
@@ -450,9 +461,20 @@ async function checkProxies() {
     
     proxyPool = checkedProxies;
     
+    // 分类：高速匿名代理 vs 普通代理
+    eliteProxies = proxyPool.filter(p => 
+        p.alive && 
+        p.speed === 'fast' && 
+        (p.anonymity?.toLowerCase() === 'elite' || p.anonymity?.toLowerCase() === 'anonymous' || p.anonymity === 'Unknown')
+    );
+    normalProxies = proxyPool.filter(p => 
+        p.alive && 
+        !eliteProxies.includes(p)
+    );
+    
     const aliveCount = proxyPool.filter(p => p.alive).length;
-    const fastCount = proxyPool.filter(p => p.speed === 'fast').length;
-    addLog('INFO', `检测完成！${aliveCount} 个存活，${fastCount} 个快速代理`);
+    lastCheckTime = new Date();
+    addLog('INFO', `检测完成！${aliveCount} 个存活，${eliteProxies.length} 个高速匿名，${normalProxies.length} 个普通代理`);
     
     isChecking = false;
 }
@@ -460,17 +482,67 @@ async function checkProxies() {
 app.get('/api/stats', (req, res) => {
     const countries = [...new Set(proxyPool.map(p => p.country))];
     const protocols = [...new Set(proxyPool.flatMap(p => p.protocol.split(', ').map(s => s.trim())))];
+    const aliveCount = proxyPool.filter(p => p.alive).length;
     const fastCount = proxyPool.filter(p => p.speed === 'fast').length;
     const goodCount = proxyPool.filter(p => p.speed === 'good').length;
     const slowCount = proxyPool.filter(p => p.speed === 'slow').length;
     
     res.json({
         total: proxyPool.length,
+        alive: aliveCount,
+        elite: eliteProxies.length,
+        normal: normalProxies.length,
         countries,
         protocols,
         updating: isUpdating,
-        progress: updateProgress,
+        checking: isChecking,
+        checkProgress,
+        lastCheckTime,
         quality: { fast: fastCount, good: goodCount, slow: slowCount }
+    });
+});
+
+// ============================================================
+// 获取高速匿名代理 API
+// ============================================================
+app.get('/api/elite', (req, res) => {
+    const { protocol, limit } = req.query;
+    let filtered = [...eliteProxies];
+    
+    if (protocol) {
+        filtered = filtered.filter(p => p.protocol.toLowerCase().includes(protocol.toLowerCase()));
+    }
+    
+    if (limit !== 'all') {
+        const maxLimit = parseInt(limit) || 100;
+        filtered = filtered.slice(0, maxLimit);
+    }
+    
+    res.json({
+        count: filtered.length,
+        data: filtered
+    });
+});
+
+// ============================================================
+// 获取普通代理 API
+// ============================================================
+app.get('/api/normal', (req, res) => {
+    const { protocol, limit } = req.query;
+    let filtered = [...normalProxies];
+    
+    if (protocol) {
+        filtered = filtered.filter(p => p.protocol.toLowerCase().includes(protocol.toLowerCase()));
+    }
+    
+    if (limit !== 'all') {
+        const maxLimit = parseInt(limit) || 100;
+        filtered = filtered.slice(0, maxLimit);
+    }
+    
+    res.json({
+        count: filtered.length,
+        data: filtered
     });
 });
 

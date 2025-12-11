@@ -208,13 +208,27 @@ header {
     transform: none;
 }
 
-.btn-fast {
+.btn-elite {
     background: linear-gradient(135deg, #f59e0b, #d97706) !important;
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
 }
 
-.btn-fast:hover {
+.btn-elite:hover {
     box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4) !important;
+}
+
+.elite-card {
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .btn-icon {
