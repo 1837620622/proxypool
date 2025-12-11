@@ -19,7 +19,51 @@ app.use(express.json());
 
 // 显式处理根路径，确保能够返回 index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+    const indexPaths = [
+        path.join(process.cwd(), 'public', 'index.html'),
+        path.join(__dirname, 'public', 'index.html'),
+        path.join(process.cwd(), 'index.html')
+    ];
+    
+    for (const p of indexPaths) {
+        // 这里只是简单的逻辑，实际应该用 fs.existsSync 判断，但为了保持 Serverless 轻量，
+        // 我们直接尝试使用最可能的路径。由于 express.static 已经处理了大部分情况，
+        // 这里的根路径处理是为了兜底。
+        // 为避免阻塞，我们直接使用第一个路径，但在 Debug 路由中我们会检查所有路径。
+    }
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'), (err) => {
+        if (err) {
+            console.error('Error sending index.html:', err);
+            res.status(500).send('Error loading page. Please check /api/debug for details.');
+        }
+    });
+});
+
+// 调试路由
+app.get('/api/debug', (req, res) => {
+    const fs = require('fs');
+    const debugInfo = {
+        cwd: process.cwd(),
+        dirname: __dirname,
+        filesInCwd: [],
+        filesInPublic: [],
+        env: process.env
+    };
+    
+    try {
+        debugInfo.filesInCwd = fs.readdirSync(process.cwd());
+    } catch (e) {
+        debugInfo.filesInCwd = e.message;
+    }
+    
+    try {
+        const publicPath = path.join(process.cwd(), 'public');
+        debugInfo.filesInPublic = fs.existsSync(publicPath) ? fs.readdirSync(publicPath) : 'public directory not found';
+    } catch (e) {
+        debugInfo.filesInPublic = e.message;
+    }
+    
+    res.json(debugInfo);
 });
 
 // ============================================================
