@@ -8,17 +8,19 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="ri-server-line"></i>
-                    <span>ProxyPool</span>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="app-container">
+        <div class="app">
+            <!-- 侧边栏 -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <i class="ri-server-line"></i>
+                        <span>ProxyPool</span>
+                    </div>
                 </div>
-            </div>
             
-            <nav class="sidebar-nav">
+                <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" data-tab="dashboard">
                     <i class="ri-dashboard-line"></i>
                     <span data-i18n="dashboard">Dashboard</span>
@@ -59,6 +61,9 @@
                     <p class="subtitle" data-i18n="subtitle">高质量免费代理服务</p>
                 </div>
                 <div class="topbar-actions">
+                    <button id="menu-btn" class="btn btn-outline mobile-only">
+                        <i class="ri-menu-line"></i>
+                    </button>
                     <button id="refresh-btn" class="btn btn-primary">
                         <i class="ri-refresh-line"></i>
                         <span data-i18n="refreshPool">刷新源</span>

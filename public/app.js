@@ -160,6 +160,27 @@ document.addEventListener('DOMContentLoaded', () => {
     countdownInterval = setInterval(updateCountdown, 1000);
 
     // ============================================================
+    // 移动端菜单逻辑
+    // ============================================================
+    const menuBtn = document.getElementById('menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('active');
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+
+    // ============================================================
     // 初始化
     // ============================================================
     fetchData();
