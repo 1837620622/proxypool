@@ -39,7 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
             exportCount: 'Count:',
             copyAll: 'Copy All',
             exportAll: 'All',
-            exportElite: 'Elite All'
+            exportElite: 'Elite All',
+            apiDocs: 'API Docs',
+            dashboard: 'Dashboard',
+            allProxies: 'All Proxies'
         },
         zh: {
             title: '代理池',
@@ -77,7 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
             exportCount: '数量:',
             copyAll: '复制全部',
             exportAll: '全部',
-            exportElite: '高速匿名'
+            exportElite: '高速匿名',
+            apiDocs: 'API 文档',
+            dashboard: '仪表盘',
+            allProxies: '全部代理'
         }
     };
 
@@ -116,9 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevPageBtn = document.getElementById('prev-page');
     const nextPageBtn = document.getElementById('next-page');
     const exportLimit = document.getElementById('export-limit');
-    const exportTxtBtn = document.getElementById('export-txt');
-    const exportJsonBtn = document.getElementById('export-json');
+    const exportHttpBtn = document.getElementById('export-http');
+    const exportSocks4Btn = document.getElementById('export-socks4');
+    const exportSocks5Btn = document.getElementById('export-socks5');
     const exportEliteBtn = document.getElementById('export-elite');
+    const exportAllBtn = document.getElementById('export-all');
+    const apiDocsPage = document.getElementById('api-docs-page');
+    const mainDashboard = document.querySelector('.main-content:not(.api-docs-page)');
     const progressSection = document.getElementById('progress-section');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
@@ -161,9 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lang-zh').addEventListener('click', () => setLanguage('zh'));
 
     // 导出功能
-    exportTxtBtn.addEventListener('click', () => exportProxies('txt'));
-    exportJsonBtn.addEventListener('click', () => exportProxies('json'));
-    exportEliteBtn.addEventListener('click', exportEliteProxies);
+    exportHttpBtn.addEventListener('click', () => window.open('/api/export?protocol=http&limit=all', '_blank'));
+    exportSocks4Btn.addEventListener('click', () => window.open('/api/export?protocol=socks4&limit=all', '_blank'));
+    exportSocks5Btn.addEventListener('click', () => window.open('/api/export?protocol=socks5&limit=all', '_blank'));
+    exportEliteBtn.addEventListener('click', () => window.open('/api/elite?limit=all', '_blank'));
+    exportAllBtn.addEventListener('click', () => window.open('/api/export?limit=all', '_blank'));
 
     // ============================================================
     // 侧边栏导航
@@ -182,17 +194,27 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 根据选项卡切换数据源
             switch(tab) {
+                case 'api':
+                    mainDashboard.classList.add('hidden');
+                    apiDocsPage.classList.remove('hidden');
+                    break;
                 case 'elite':
+                    mainDashboard.classList.remove('hidden');
+                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = 'fast';
                     applyFilters();
                     break;
                 case 'normal':
+                    mainDashboard.classList.remove('hidden');
+                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = '';
                     applyFilters();
                     break;
                 case 'all':
                 case 'dashboard':
                 default:
+                    mainDashboard.classList.remove('hidden');
+                    apiDocsPage.classList.add('hidden');
                     speedFilter.value = '';
                     countryFilter.value = '';
                     protocolFilter.value = '';

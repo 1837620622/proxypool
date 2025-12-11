@@ -591,8 +591,16 @@ app.get('/api/export', (req, res) => {
     } else {
         // TXT格式: ip:port
         const txtContent = filtered.map(p => `${p.ip}:${p.port}`).join('\n');
+        
+        // 生成有意义的文件名
+        let filename = 'proxies';
+        if (protocol) filename += `_${protocol}`;
+        if (speed) filename += `_${speed}`;
+        filename += `_${filtered.length}`;
+        filename += '.txt';
+        
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename="proxies_${Date.now()}.txt"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(txtContent);
     }
 });

@@ -35,6 +35,11 @@
                     <i class="ri-list-check"></i>
                     <span data-i18n="allProxies">All Proxies</span>
                 </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" data-tab="api">
+                    <i class="ri-code-s-slash-line"></i>
+                    <span data-i18n="apiDocs">API Docs</span>
+                </a>
             </nav>
             
             <div class="sidebar-footer">
@@ -150,20 +155,20 @@
                     </div>
                 </div>
                 <div class="export-actions">
-                    <select id="export-limit" class="export-select">
-                        <option value="100">100</option>
-                        <option value="500">500</option>
-                        <option value="1000">1000</option>
-                        <option value="all" data-i18n="exportAll">全部</option>
-                    </select>
-                    <button id="export-txt" class="btn btn-sm">
-                        <i class="ri-file-text-line"></i> TXT
+                    <button id="export-http" class="btn btn-sm" title="Export HTTP proxies">
+                        <i class="ri-global-line"></i> HTTP
                     </button>
-                    <button id="export-json" class="btn btn-sm">
-                        <i class="ri-braces-line"></i> JSON
+                    <button id="export-socks4" class="btn btn-sm" title="Export SOCKS4 proxies">
+                        <i class="ri-shield-line"></i> SOCKS4
                     </button>
-                    <button id="export-elite" class="btn btn-sm btn-elite">
+                    <button id="export-socks5" class="btn btn-sm" title="Export SOCKS5 proxies">
+                        <i class="ri-shield-keyhole-line"></i> SOCKS5
+                    </button>
+                    <button id="export-elite" class="btn btn-sm btn-elite" title="Export Elite proxies">
                         <i class="ri-vip-crown-line"></i> <span data-i18n="exportElite">高速匿名</span>
+                    </button>
+                    <button id="export-all" class="btn btn-sm" title="Export all proxies">
+                        <i class="ri-download-line"></i> <span data-i18n="exportAll">全部</span>
                     </button>
                 </div>
             </section>
@@ -215,6 +220,85 @@
             </section>
 
             <!-- 页脚 -->
+            <footer class="footer">
+                <p>Vx: 1837620622 (传康kk) | Email: 2040168455@qq.com | B站/咸鱼: 万能程序员</p>
+            </footer>
+        </main>
+
+        <!-- API 文档页面 -->
+        <main class="main-content api-docs-page hidden" id="api-docs-page">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1 data-i18n="apiDocs">API 文档</h1>
+                    <p class="subtitle">RESTful API 接口说明</p>
+                </div>
+            </header>
+
+            <section class="api-docs">
+                <div class="api-card">
+                    <h3><i class="ri-bar-chart-line"></i> 获取统计信息</h3>
+                    <code class="api-endpoint">GET /api/stats</code>
+                    <p>返回代理池统计数据，包括总数、高速匿名数量、普通代理数量等。</p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-list-check"></i> 获取代理列表</h3>
+                    <code class="api-endpoint">GET /api/proxies</code>
+                    <p>参数: <code>country</code>, <code>protocol</code>, <code>anonymity</code></p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-vip-crown-line"></i> 获取高速匿名代理</h3>
+                    <code class="api-endpoint">GET /api/elite?limit=all</code>
+                    <p>返回所有经过检测的高速匿名代理。</p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-user-line"></i> 获取普通代理</h3>
+                    <code class="api-endpoint">GET /api/normal?limit=all</code>
+                    <p>返回所有经过检测的普通代理。</p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-download-line"></i> 导出代理</h3>
+                    <code class="api-endpoint">GET /api/export</code>
+                    <p>参数:</p>
+                    <ul>
+                        <li><code>protocol</code> - http, https, socks4, socks5</li>
+                        <li><code>speed</code> - fast, good, slow</li>
+                        <li><code>limit</code> - 数量或 "all"</li>
+                        <li><code>format</code> - txt (默认) 或 json</li>
+                    </ul>
+                    <p>示例:</p>
+                    <code class="api-example">/api/export?protocol=http&limit=all</code>
+                    <code class="api-example">/api/export?protocol=socks5&speed=fast&limit=100</code>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-shuffle-line"></i> 获取随机代理</h3>
+                    <code class="api-endpoint">GET /api/random</code>
+                    <p>参数: <code>protocol</code>, <code>speed</code>, <code>count</code></p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-refresh-line"></i> 刷新代理源</h3>
+                    <code class="api-endpoint">POST /api/refresh</code>
+                    <p>触发从所有代理源重新获取代理。</p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-pulse-line"></i> 检测代理存活</h3>
+                    <code class="api-endpoint">POST /api/check</code>
+                    <p>触发后台检测所有代理的存活性。</p>
+                </div>
+
+                <div class="api-card">
+                    <h3><i class="ri-loader-4-line"></i> 获取检测进度</h3>
+                    <code class="api-endpoint">GET /api/check-progress</code>
+                    <p>返回当前检测进度。</p>
+                </div>
+            </section>
+
             <footer class="footer">
                 <p>Vx: 1837620622 (传康kk) | Email: 2040168455@qq.com | B站/咸鱼: 万能程序员</p>
             </footer>
