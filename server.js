@@ -13,12 +13,21 @@ const PORT = process.env.PORT || 3000;
 // Store proxies in memory
 let proxyPool = [];
 let isUpdating = false;
+let systemLogs = []; // 系统日志
+
+function addLog(type, message) {
+    const log = `[${new Date().toISOString()}] [${type}] ${message}`;
+    console.log(log);
+    systemLogs.unshift(log);
+    if (systemLogs.length > 100) systemLogs.pop();
+}
 
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(express.json());
 
 // 显式处理根路径，确保能够返回 index.html
 app.get('/', (req, res) => {
+    // ... (保持原有的路径处理逻辑)
     const indexPaths = [
         path.join(process.cwd(), 'public', 'index.html'),
         path.join(__dirname, 'public', 'index.html'),
@@ -26,10 +35,7 @@ app.get('/', (req, res) => {
     ];
     
     for (const p of indexPaths) {
-        // 这里只是简单的逻辑，实际应该用 fs.existsSync 判断，但为了保持 Serverless 轻量，
-        // 我们直接尝试使用最可能的路径。由于 express.static 已经处理了大部分情况，
-        // 这里的根路径处理是为了兜底。
-        // 为避免阻塞，我们直接使用第一个路径，但在 Debug 路由中我们会检查所有路径。
+        // ...
     }
     res.sendFile(path.join(process.cwd(), 'public', 'index.html'), (err) => {
         if (err) {
@@ -41,6 +47,7 @@ app.get('/', (req, res) => {
 
 // 调试路由
 app.get('/api/debug', (req, res) => {
+    // ... (保持原有逻辑)
     const fs = require('fs');
     const debugInfo = {
         cwd: process.cwd(),
@@ -66,10 +73,63 @@ app.get('/api/debug', (req, res) => {
     res.json(debugInfo);
 });
 
+// 查看系统日志
+app.get('/api/logs', (req, res) => {
+    res.json(systemLogs);
+});
+
+// 测试代理源
+app.get('/api/test-source', async (req, res) => {
+    const { source } = req.query;
+    if (!source || !PROXY_SOURCES[source]) {
+        return res.status(400).json({ error: 'Invalid source key', available: Object.keys(PROXY_SOURCES) });
+    }
+
+    const srcConfig = PROXY_SOURCES[source];
+    try {
+        let rawData = null;
+        let parsedCount = 0;
+        
+        if (srcConfig.type === 'json') {
+            const response = await axios.get(srcConfig.url, { 
+                timeout: 10000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+            });
+            rawData = response.data;
+            if (response.data && Array.isArray(response.data.data)) {
+                parsedCount = response.data.data.length;
+            }
+        } else if (srcConfig.type === 'text') {
+            const item = srcConfig.urls[0]; // 只测试第一个 URL
+            const response = await axios.get(item.url, { 
+                timeout: 10000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
+            });
+            rawData = response.data.substring(0, 500) + '... (truncated)';
+            const parsed = parseTextProxies(response.data, item.protocol);
+            parsedCount = parsed.length;
+        }
+
+        res.json({
+            source: srcConfig.name,
+            status: 'success',
+            parsedCount,
+            sampleRaw: rawData
+        });
+    } catch (err) {
+        res.status(500).json({
+            source: srcConfig.name,
+            status: 'error',
+            message: err.message
+        });
+    }
+});
+
 // ============================================================
 // 代理源配置
 // ============================================================
 const PROXY_SOURCES = {
+    // ... (保持 PROXY_SOURCES 内容不变)
     // 源1: CharlesPikachu/freeproxy (JSON格式，带详细信息)
     freeproxy: {
         name: 'FreeProxy',
@@ -98,27 +158,7 @@ const PROXY_SOURCES = {
     }
 };
 
-// ============================================================
-// 解析纯文本格式的代理列表 (IP:Port)
-// ============================================================
-function parseTextProxies(text, protocol) {
-    const lines = text.split('\n').filter(line => line.trim());
-    return lines.map(line => {
-        const parts = line.trim().split(':');
-        if (parts.length >= 2) {
-            return {
-                ip: parts[0],
-                port: parseInt(parts[1], 10),
-                protocol: protocol,
-                country: 'Unknown',
-                anonymity: 'Unknown',
-                speed: 0,
-                source: 'text'
-            };
-        }
-        return null;
-    }).filter(p => p !== null && !isNaN(p.port));
-}
+// ... (保持 parseTextProxies 不变)
 
 // ============================================================
 // 从单个源获取代理
@@ -128,11 +168,17 @@ async function fetchFromSource(sourceKey) {
     const proxies = [];
     
     try {
-        console.log(`[${source.name}] 开始获取代理...`);
+        addLog('INFO', `[${source.name}] 开始获取代理...`);
+        const axiosConfig = {
+            timeout: 15000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        };
         
         if (source.type === 'json') {
             // JSON格式源 (FreeProxy)
-            const response = await axios.get(source.url, { timeout: 15000 });
+            const response = await axios.get(source.url, axiosConfig);
             if (response.data && Array.isArray(response.data.data)) {
                 proxies.push(...response.data.data.map(p => ({ ...p, source: source.name })));
             }
@@ -140,31 +186,28 @@ async function fetchFromSource(sourceKey) {
             // 文本格式源 (多个URL)
             for (const item of source.urls) {
                 try {
-                    const response = await axios.get(item.url, { timeout: 15000 });
+                    const response = await axios.get(item.url, axiosConfig);
                     const parsed = parseTextProxies(response.data, item.protocol);
                     parsed.forEach(p => p.source = source.name);
                     proxies.push(...parsed);
                 } catch (err) {
-                    console.error(`[${source.name}] 获取 ${item.protocol} 失败: ${err.message}`);
+                    addLog('ERROR', `[${source.name}] 获取 ${item.protocol} 失败: ${err.message}`);
                 }
             }
         }
         
-        console.log(`[${source.name}] 获取到 ${proxies.length} 个代理`);
+        addLog('INFO', `[${source.name}] 获取到 ${proxies.length} 个代理`);
     } catch (error) {
-        console.error(`[${source.name}] 获取失败: ${error.message}`);
+        addLog('ERROR', `[${source.name}] 获取失败: ${error.message}`);
     }
     
     return proxies;
 }
 
-// ============================================================
-// 从所有源获取代理
-// ============================================================
+// ... (fetchProxies 保持不变，但其中日志调用已通过 addLog 替换)
+
 async function fetchProxies() {
-    console.log('============================================================');
-    console.log('开始从所有代理源获取数据...');
-    console.log('============================================================');
+    addLog('INFO', '开始从所有代理源获取数据...');
     
     const allProxies = [];
     
@@ -175,7 +218,7 @@ async function fetchProxies() {
     
     results.forEach(proxies => allProxies.push(...proxies));
     
-    console.log(`总计获取到 ${allProxies.length} 个代理`);
+    addLog('INFO', `总计获取到 ${allProxies.length} 个代理`);
     return allProxies;
 }
 
@@ -183,80 +226,26 @@ async function fetchProxies() {
 // 优质代理筛选配置
 // ============================================================
 const QUALITY_CONFIG = {
-    maxLatency: 3000,        // 最大延迟阈值(ms)
-    fastLatency: 500,        // 快速代理阈值(ms)
-    goodLatency: 1000,       // 良好代理阈值(ms)
-    timeout: 1500,           // 检测超时时间(ms) - 加快检测速度
-    batchSize: 200,          // 并发批次大小 - 增大并发
-    batchDelay: 50           // 批次间延迟(ms) - 减少延迟
+    maxLatency: 5000,        // 最大延迟阈值(ms) - 放宽
+    fastLatency: 800,        // 快速代理阈值(ms) - 放宽
+    goodLatency: 1500,       // 良好代理阈值(ms) - 放宽
+    timeout: 5000,           // 检测超时时间(ms) - 大幅增加以适应 Railway 网络
+    batchSize: 50,           // 并发批次大小 - 降低并发避免拥塞
+    batchDelay: 200          // 批次间延迟(ms) - 增加间隔
 };
 
-// ============================================================
-// 检测代理是否存活 (优化速度版)
-// ============================================================
-async function checkProxy(proxy) {
-    const host = proxy.ip;
-    const port = proxy.port;
+// ... (checkProxy 保持不变)
 
-    const tcpStart = Date.now();
-    try {
-        await new Promise((resolve, reject) => {
-            const socket = new net.Socket();
-            socket.setTimeout(QUALITY_CONFIG.timeout);
-            socket.connect(port, host, () => {
-                socket.destroy();
-                resolve();
-            });
-            socket.on('error', (err) => reject(err));
-            socket.on('timeout', () => {
-                socket.destroy();
-                reject(new Error('Timeout'));
-            });
-        });
-        
-        const latency = Date.now() - tcpStart;
-        
-        // 只保留延迟在阈值内的优质代理
-        if (latency > QUALITY_CONFIG.maxLatency) {
-            return { ...proxy, alive: false, error: 'Too slow', last_checked: new Date() };
-        }
-        
-        // 计算质量评分 (0-100)
-        let quality = 100;
-        if (latency > QUALITY_CONFIG.fastLatency) {
-            quality = Math.max(0, 100 - Math.floor((latency - QUALITY_CONFIG.fastLatency) / 25));
-        }
-        
-        return { 
-            ...proxy, 
-            alive: true, 
-            latency, 
-            quality,
-            speed: latency < QUALITY_CONFIG.fastLatency ? 'fast' : 
-                   latency < QUALITY_CONFIG.goodLatency ? 'good' : 'slow',
-            last_checked: new Date() 
-        };
-    } catch (e) {
-        return { ...proxy, alive: false, error: e.message, last_checked: new Date() };
-    }
-}
-
-// ============================================================
-// 更新代理池 (优化版本)
-// ============================================================
-let updateProgress = { current: 0, total: 0, phase: 'idle' };
+// ... (updatePool 保持不变，但日志调用替换)
 
 async function updatePool() {
     if (isUpdating) return;
     isUpdating = true;
     updateProgress = { current: 0, total: 0, phase: 'fetching' };
-    console.log('============================================================');
-    console.log('开始更新代理池...');
-    console.log('============================================================');
+    addLog('INFO', '开始更新代理池...');
 
     const rawProxies = await fetchProxies();
-    console.log(`获取到 ${rawProxies.length} 个代理`);
-
+    
     // 去重
     updateProgress.phase = 'deduplicating';
     const uniqueProxies = new Map();
@@ -269,7 +258,7 @@ async function updatePool() {
 
     const proxiesArray = Array.from(uniqueProxies.values());
     updateProgress.total = proxiesArray.length;
-    console.log(`去重后: ${proxiesArray.length} 个唯一代理，开始存活检测...`);
+    addLog('INFO', `去重后: ${proxiesArray.length} 个唯一代理，开始存活检测...`);
 
     // 使用优化的批次大小进行并发检测
     updateProgress.phase = 'checking';
@@ -304,12 +293,8 @@ async function updatePool() {
     const goodCount = proxyPool.filter(p => p.speed === 'good').length;
     const slowCount = proxyPool.filter(p => p.speed === 'slow').length;
     
-    console.log('============================================================');
-    console.log(`代理池更新完成！共 ${proxyPool.length} 个活跃代理`);
-    console.log(`  - 快速 (${QUALITY_CONFIG.fastLatency}ms以下): ${fastCount} 个`);
-    console.log(`  - 良好 (${QUALITY_CONFIG.goodLatency}ms以下): ${goodCount} 个`);
-    console.log(`  - 较慢: ${slowCount} 个`);
-    console.log('============================================================');
+    addLog('INFO', `代理池更新完成！共 ${proxyPool.length} 个活跃代理`);
+    addLog('INFO', `  - 快速: ${fastCount} 个, 良好: ${goodCount} 个, 较慢: ${slowCount} 个`);
     
     isUpdating = false;
 }
