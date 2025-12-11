@@ -117,7 +117,7 @@ GET /api/export
 | format | string | 导出格式: txt (默认) 或 json |
 | protocol | string | 协议筛选 |
 | speed | string | 速度筛选: fast, good, slow |
-| limit | number | 导出数量 (最大1000) |
+| limit | string | 导出数量，支持数字或 `all` (导出全部) |
 
 **示例:**
 ```bash
@@ -156,6 +156,29 @@ GET /api/stats
 
 ```
 POST /api/refresh
+```
+
+### 手动检测代理存活性
+
+```
+POST /api/check
+```
+
+触发后台检测所有代理的存活性，检测结果会更新代理的速度评分。
+
+### 获取检测进度
+
+```
+GET /api/check-progress
+```
+
+返回当前检测进度：
+```json
+{
+  "checking": true,
+  "current": 1000,
+  "total": 45000
+}
 ```
 
 ---
@@ -198,12 +221,12 @@ proxypool/
 
 ```javascript
 const QUALITY_CONFIG = {
-    maxLatency: 3000,    // 最大延迟阈值(ms)
-    fastLatency: 500,    // 快速代理阈值(ms)
-    goodLatency: 1000,   // 良好代理阈值(ms)
-    timeout: 1500,       // 检测超时时间(ms)
-    batchSize: 200,      // 并发批次大小
-    batchDelay: 50       // 批次间延迟(ms)
+    maxLatency: 5000,    // 最大延迟阈值(ms)
+    fastLatency: 800,    // 快速代理阈值(ms)
+    goodLatency: 1500,   // 良好代理阈值(ms)
+    timeout: 2000,       // 检测超时时间(ms)
+    batchSize: 500,      // 并发批次大小
+    batchDelay: 10       // 批次间延迟(ms)
 };
 ```
 
@@ -211,10 +234,11 @@ const QUALITY_CONFIG = {
 
 ## 📊 统计数据
 
-- 🔢 **海量代理**: 自动汇聚多个开源代理源
-- ⚡ **实时检测**: 定时检测代理存活状态
-- 🌍 **全球覆盖**: 包含来自世界各地的免费代理
-- 🔄 **自动更新**: 默认每小时自动更新代理池
+- 🔢 **海量代理**: 自动汇聚 45,000+ 代理
+- ⚡ **快速代理**: 40,000+ 快速可用代理
+- 🌍 **全球覆盖**: 100+ 国家/地区
+- 🔄 **自动更新**: 每小时自动更新代理池
+- 🖱️ **手动检测**: 用户可一键触发存活检测
 
 ---
 
