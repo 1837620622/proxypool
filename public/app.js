@@ -118,12 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportLimit = document.getElementById('export-limit');
     const exportTxtBtn = document.getElementById('export-txt');
     const exportJsonBtn = document.getElementById('export-json');
-    const copyAllBtn = document.getElementById('copy-all');
     const exportEliteBtn = document.getElementById('export-elite');
-    const progressModal = document.getElementById('progress-modal');
+    const progressSection = document.getElementById('progress-section');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
     const checkBtn = document.getElementById('check-btn');
+    const statusCard = document.querySelector('.stat-card.status');
     
     // 检测状态
     let isChecking = false;
@@ -163,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 导出功能
     exportTxtBtn.addEventListener('click', () => exportProxies('txt'));
     exportJsonBtn.addEventListener('click', () => exportProxies('json'));
-    copyAllBtn.addEventListener('click', copyAllProxies);
     exportEliteBtn.addEventListener('click', exportEliteProxies);
 
     // ============================================================
@@ -296,30 +295,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (isChecking) {
             statusIndicator.textContent = i18n[currentLang].checking;
-            statusIcon.style.background = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
-            document.getElementById('status-icon-i').className = 'ri-loader-4-line spin';
+            document.getElementById('status-icon-i').className = 'ri-loader-4-line';
+            statusCard?.classList.remove('updating');
+            statusCard?.classList.add('checking');
             checkBtn.disabled = true;
             
             // 显示检测进度
             if (stats.checkProgress) {
                 const { current, total } = stats.checkProgress;
                 const percent = total > 0 ? Math.round((current / total) * 100) : 0;
-                progressModal.classList.remove('hidden');
+                progressSection?.classList.remove('hidden');
                 progressText.textContent = `${current}/${total} (${percent}%)`;
                 progressBarFill.style.width = `${percent}%`;
             }
         } else if (isUpdating) {
             statusIndicator.textContent = i18n[currentLang].updating;
-            statusIcon.style.background = 'linear-gradient(135deg, #eab308, #ca8a04)';
-            document.getElementById('status-icon-i').className = 'ri-loader-4-line spin';
+            document.getElementById('status-icon-i').className = 'ri-loader-4-line';
+            statusCard?.classList.remove('checking');
+            statusCard?.classList.add('updating');
             refreshBtn.disabled = true;
         } else {
             statusIndicator.textContent = i18n[currentLang].ready;
-            statusIcon.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
             document.getElementById('status-icon-i').className = 'ri-checkbox-circle-line';
+            statusCard?.classList.remove('checking', 'updating');
             refreshBtn.disabled = false;
             checkBtn.disabled = false;
-            progressModal.classList.add('hidden');
+            progressSection?.classList.add('hidden');
         }
     }
 

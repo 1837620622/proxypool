@@ -3,225 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Proxy Pool</title>
+    <title>Proxy Pool - 高速代理池</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 背景动画 -->
-    <div class="bg-animation">
-        <div class="bg-grid"></div>
-    </div>
-    
-    <div class="container">
-        <!-- 顶部导航栏 -->
-        <header>
-            <div class="logo">
-                <div class="logo-icon">
+    <div class="app">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
                     <i class="ri-server-line"></i>
-                </div>
-                <div class="logo-text">
-                    <h1 data-i18n="title">Proxy Pool</h1>
-                    <span class="logo-subtitle" data-i18n="subtitle">High Quality Free Proxies</span>
+                    <span>ProxyPool</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="lang-switch">
-                    <button id="lang-en" class="lang-btn active">EN</button>
-                    <button id="lang-zh" class="lang-btn">中文</button>
-                </div>
-                <button id="refresh-btn" class="btn-primary">
-                    <i class="ri-refresh-line"></i> <span data-i18n="refreshPool">Refresh</span>
-                </button>
-                <button id="check-btn" class="btn-secondary">
-                    <i class="ri-pulse-line"></i> <span data-i18n="checkProxies">Check</span>
-                </button>
-            </div>
-        </header>
-        
-        <!-- 统计卡片区域 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
-                    <i class="ri-database-2-line"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-value" id="total-count">0</span>
-                    <span class="stat-label" data-i18n="totalProxies">Total Proxies</span>
-                </div>
-            </div>
-            <div class="stat-card elite-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <i class="ri-dashboard-line"></i>
+                    <span data-i18n="dashboard">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="elite">
                     <i class="ri-vip-crown-line"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-value" id="elite-count">0</span>
-                    <span class="stat-label" data-i18n="eliteProxies">Elite Proxies</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                    <span data-i18n="eliteProxies">Elite Proxies</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="normal">
                     <i class="ri-user-line"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-value" id="normal-count">0</span>
-                    <span class="stat-label" data-i18n="normalProxies">Normal Proxies</span>
+                    <span data-i18n="normalProxies">Normal Proxies</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="all">
+                    <i class="ri-list-check"></i>
+                    <span data-i18n="allProxies">All Proxies</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="lang-switch">
+                    <button id="lang-en" class="lang-btn">EN</button>
+                    <button id="lang-zh" class="lang-btn active">中文</button>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" id="status-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                    <i class="ri-checkbox-circle-line" id="status-icon-i"></i>
-                </div>
-                <div class="stat-info">
-                    <span class="stat-value" id="status-indicator" data-i18n="ready">Ready</span>
-                    <span class="stat-label" id="last-check-time">-</span>
-                </div>
-            </div>
-        </div>
+        </aside>
 
-        <main>
-            <!-- 筛选和导出区域 -->
-            <div class="control-panel">
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部栏 -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1 data-i18n="title">代理池仪表盘</h1>
+                    <p class="subtitle" data-i18n="subtitle">高质量免费代理服务</p>
+                </div>
+                <div class="topbar-actions">
+                    <button id="refresh-btn" class="btn btn-outline">
+                        <i class="ri-refresh-line"></i>
+                        <span data-i18n="refreshPool">刷新源</span>
+                    </button>
+                    <button id="check-btn" class="btn btn-primary">
+                        <i class="ri-pulse-line"></i>
+                        <span data-i18n="checkProxies">检测代理</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 统计卡片 -->
+            <section class="stats-section">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="ri-database-2-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="total-count">0</span>
+                        <span class="stat-label" data-i18n="totalProxies">代理总数</span>
+                    </div>
+                </div>
+                <div class="stat-card elite">
+                    <div class="stat-icon">
+                        <i class="ri-vip-crown-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="elite-count">0</span>
+                        <span class="stat-label" data-i18n="eliteProxies">高速匿名</span>
+                    </div>
+                </div>
+                <div class="stat-card normal">
+                    <div class="stat-icon">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="normal-count">0</span>
+                        <span class="stat-label" data-i18n="normalProxies">普通代理</span>
+                    </div>
+                </div>
+                <div class="stat-card status">
+                    <div class="stat-icon" id="status-icon">
+                        <i class="ri-checkbox-circle-line" id="status-icon-i"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="status-indicator" data-i18n="ready">就绪</span>
+                        <span class="stat-label" id="last-check-time">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 检测进度条 -->
+            <section class="progress-section hidden" id="progress-section">
+                <div class="progress-info">
+                    <span class="progress-label" data-i18n="checking">检测中...</span>
+                    <span class="progress-text" id="progress-text">0/0 (0%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-bar-fill"></div>
+                </div>
+            </section>
+
+            <!-- 筛选和操作区 -->
+            <section class="filter-section">
                 <div class="filters">
-                    <div class="filter-group">
-                        <label><i class="ri-flag-line"></i> <span data-i18n="country">Country</span></label>
+                    <div class="filter-item">
+                        <label><i class="ri-global-line"></i></label>
                         <select id="country-filter">
-                            <option value="" data-i18n="allCountries">All Countries</option>
+                            <option value="" data-i18n="allCountries">所有国家</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label><i class="ri-shield-keyhole-line"></i> <span data-i18n="protocol">Protocol</span></label>
+                    <div class="filter-item">
+                        <label><i class="ri-shield-keyhole-line"></i></label>
                         <select id="protocol-filter">
-                            <option value="" data-i18n="allProtocols">All Protocols</option>
+                            <option value="" data-i18n="allProtocols">所有协议</option>
                             <option value="http">HTTP</option>
                             <option value="https">HTTPS</option>
                             <option value="socks4">SOCKS4</option>
                             <option value="socks5">SOCKS5</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label><i class="ri-speed-line"></i> <span data-i18n="speed">Speed</span></label>
+                    <div class="filter-item">
+                        <label><i class="ri-speed-line"></i></label>
                         <select id="speed-filter">
-                            <option value="" data-i18n="allSpeeds">All Speeds</option>
-                            <option value="fast" data-i18n="fast">Fast (&lt;500ms)</option>
-                            <option value="good" data-i18n="good">Good (&lt;1000ms)</option>
-                            <option value="slow" data-i18n="slow">Slow</option>
+                            <option value="" data-i18n="allSpeeds">所有速度</option>
+                            <option value="fast" data-i18n="fast">快速</option>
+                            <option value="good" data-i18n="good">良好</option>
+                            <option value="slow" data-i18n="slow">较慢</option>
                         </select>
                     </div>
-                    <div class="filter-group">
-                        <label><i class="ri-search-line"></i> <span data-i18n="search">Search</span></label>
-                        <input type="text" id="search-input" data-i18n-placeholder="searchIP" placeholder="Search IP...">
+                    <div class="filter-item search">
+                        <i class="ri-search-line"></i>
+                        <input type="text" id="search-input" data-i18n-placeholder="searchIP" placeholder="搜索 IP...">
                     </div>
                 </div>
-                
-                <!-- 导出功能区 -->
-                <div class="export-panel">
-                    <div class="export-header">
-                        <i class="ri-download-cloud-line"></i>
-                        <span data-i18n="exportTitle">Export Proxies</span>
-                    </div>
-                    <div class="export-options">
-                        <div class="export-row">
-                            <label data-i18n="exportCount">Count:</label>
-                            <select id="export-limit">
-                                <option value="50">50</option>
-                                <option value="100" selected>100</option>
-                                <option value="200">200</option>
-                                <option value="500">500</option>
-                                <option value="1000">1000</option>
-                                <option value="all" data-i18n="exportAll">All</option>
-                            </select>
-                        </div>
-                        <div class="export-buttons">
-                            <button id="export-txt" class="btn-export">
-                                <i class="ri-file-text-line"></i> TXT
-                            </button>
-                            <button id="export-json" class="btn-export">
-                                <i class="ri-braces-line"></i> JSON
-                            </button>
-                            <button id="copy-all" class="btn-export btn-copy">
-                                <i class="ri-file-copy-line"></i> <span data-i18n="copyAll">Copy All</span>
-                            </button>
-                            <button id="export-elite" class="btn-export btn-elite">
-                                <i class="ri-vip-crown-line"></i> <span data-i18n="exportElite">Elite All</span>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- API接口说明 -->
-                    <div class="api-hint">
-                        <span>API:</span>
-                        <code id="api-url">/api/export?protocol=http&speed=fast&limit=100</code>
-                        <button class="btn-icon-small" onclick="copyToClipboard(document.getElementById('api-url').textContent)">
-                            <i class="ri-file-copy-line"></i>
-                        </button>
-                    </div>
+                <div class="export-actions">
+                    <select id="export-limit" class="export-select">
+                        <option value="100">100</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                        <option value="all" data-i18n="exportAll">全部</option>
+                    </select>
+                    <button id="export-txt" class="btn btn-sm">
+                        <i class="ri-file-text-line"></i> TXT
+                    </button>
+                    <button id="export-json" class="btn btn-sm">
+                        <i class="ri-braces-line"></i> JSON
+                    </button>
+                    <button id="export-elite" class="btn btn-sm btn-elite">
+                        <i class="ri-vip-crown-line"></i> <span data-i18n="exportElite">高速匿名</span>
+                    </button>
                 </div>
-            </div>
+            </section>
 
-            <!-- 代理列表表格 -->
-            <div class="table-container">
+            <!-- 代理列表 -->
+            <section class="table-section">
                 <div class="table-header">
-                    <span class="result-count"><span id="filtered-count">0</span> <span data-i18n="results">results</span></span>
+                    <span class="result-count">
+                        <span id="filtered-count">0</span> <span data-i18n="results">条结果</span>
+                    </span>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th data-i18n="ipAddress">IP Address</th>
-                            <th data-i18n="port">Port</th>
-                            <th data-i18n="protocol">Protocol</th>
-                            <th data-i18n="country">Country</th>
-                            <th data-i18n="quality">Quality</th>
-                            <th data-i18n="latency">Latency</th>
-                            <th data-i18n="action">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="proxy-list">
-                    </tbody>
-                </table>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="ipAddress">IP 地址</th>
+                                <th data-i18n="port">端口</th>
+                                <th data-i18n="protocol">协议</th>
+                                <th data-i18n="country">国家</th>
+                                <th data-i18n="speed">速度</th>
+                                <th data-i18n="latency">延迟</th>
+                                <th data-i18n="action">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proxy-list"></tbody>
+                    </table>
+                </div>
                 <div id="loading" class="loading hidden">
                     <div class="spinner"></div>
-                    <p data-i18n="loadingProxies">Loading proxies...</p>
+                    <p data-i18n="loadingProxies">加载中...</p>
                 </div>
                 <div id="no-results" class="no-results hidden">
                     <i class="ri-inbox-line"></i>
-                    <p data-i18n="noResults">No proxies found matching your criteria</p>
+                    <p data-i18n="noResults">未找到符合条件的代理</p>
                 </div>
-            </div>
-            
+            </section>
+
             <!-- 分页 -->
-            <div class="pagination">
+            <section class="pagination">
                 <button id="prev-page" class="btn-page" disabled>
                     <i class="ri-arrow-left-s-line"></i>
                 </button>
-                <span class="page-info"><span id="current-page">1</span> / <span id="total-pages">1</span></span>
+                <span class="page-info">
+                    <span id="current-page">1</span> / <span id="total-pages">1</span>
+                </span>
                 <button id="next-page" class="btn-page">
                     <i class="ri-arrow-right-s-line"></i>
                 </button>
-            </div>
+            </section>
+
+            <!-- 页脚 -->
+            <footer class="footer">
+                <p>Vx: 1837620622 (传康kk) | Email: 2040168455@qq.com | B站/咸鱼: 万能程序员</p>
+            </footer>
         </main>
-        
-        <!-- 页脚 -->
-        <footer>
-            <p>Vx: 1837620622 (传康kk) | Email: 2040168455@qq.com | B站/咸鱼: 万能程序员</p>
-        </footer>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden" data-i18n="copied">Copied to clipboard!</div>
-
-    <!-- 进度弹窗 -->
-    <div id="progress-modal" class="progress-modal hidden">
-        <div class="progress-content">
-            <div class="progress-header">
-                <i class="ri-loader-4-line spin"></i>
-                <span data-i18n="updating">Updating...</span>
-            </div>
-            <div class="progress-text" id="progress-text">0/0 (0%)</div>
-            <div class="progress-bar-container">
-                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
-            </div>
-        </div>
-    </div>
+    <!-- Toast -->
+    <div id="toast" class="toast hidden" data-i18n="copied">已复制到剪贴板！</div>
 
     <script src="app.js"></script>
 </body>
