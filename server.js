@@ -460,13 +460,13 @@ async function updatePool() {
     }
 })();
 
-// Schedule update every 6 hours (减少费用)
-cron.schedule('0 */6 * * *', () => {
+// Schedule update every 15 minutes
+cron.schedule('*/15 * * * *', () => {
     updatePool();
 });
 
-// Schedule auto check every 2 hours (减少费用)
-cron.schedule('0 */2 * * *', () => {
+// Schedule auto check every 1 hour
+cron.schedule('0 * * * *', () => {
     if (!isChecking && proxyPool.length > 0) {
         addLog('INFO', '定时自动检测开始...');
         checkProxies();

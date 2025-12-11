@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownTime = document.getElementById('countdown-time');
 
     // ============================================================
-    // 倒计时逻辑 (每15分钟检测一次)
+    // 倒计时逻辑 (每1小时检测一次)
     // ============================================================
     let countdownInterval = null;
     
@@ -145,9 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = now.getMinutes();
         const seconds = now.getSeconds();
         
-        // 计算距离下一个15分钟的时间
-        const nextCheck = 15 - (minutes % 15);
-        const remainingSeconds = (nextCheck - 1) * 60 + (60 - seconds);
+        // 计算距离下一个整点的时间
+        const remainingSeconds = (59 - minutes) * 60 + (60 - seconds);
         
         const mins = Math.floor(remainingSeconds / 60);
         const secs = remainingSeconds % 60;
