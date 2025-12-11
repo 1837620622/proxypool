@@ -248,12 +248,12 @@ async function fetchProxies() {
 // 优质代理筛选配置
 // ============================================================
 const QUALITY_CONFIG = {
-    maxLatency: 5000,        // 最大延迟阈值(ms) - 放宽
-    fastLatency: 800,        // 快速代理阈值(ms) - 放宽
-    goodLatency: 1500,       // 良好代理阈值(ms) - 放宽
-    timeout: 3000,           // 检测超时时间(ms) - 优化速度
-    batchSize: 200,          // 并发批次大小 - 提高并发
-    batchDelay: 50           // 批次间延迟(ms) - 减少等待
+    maxLatency: 5000,        // 最大延迟阈值(ms)
+    fastLatency: 800,        // 快速代理阈值(ms)
+    goodLatency: 1500,       // 良好代理阈值(ms)
+    timeout: 2000,           // 检测超时时间(ms) - 更短超时
+    batchSize: 500,          // 并发批次大小 - 大幅提高并发
+    batchDelay: 10           // 批次间延迟(ms) - 几乎无延迟
 };
 
 // ============================================================
@@ -495,9 +495,11 @@ app.get('/api/export', (req, res) => {
         filtered = filtered.filter(p => p.speed === speed);
     }
     
-    // 限制数量
-    const maxLimit = Math.min(parseInt(limit) || 100, 1000);
-    filtered = filtered.slice(0, maxLimit);
+    // 限制数量 (支持 'all' 导出全部)
+    if (limit !== 'all') {
+        const maxLimit = parseInt(limit) || 100;
+        filtered = filtered.slice(0, maxLimit);
+    }
     
     // 根据格式返回
     const outputFormat = format || 'txt';

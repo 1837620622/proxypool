@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
             copied: 'Copied to clipboard!',
             exportTitle: 'Export Proxies',
             exportCount: 'Count:',
-            copyAll: 'Copy All'
+            copyAll: 'Copy All',
+            exportAll: 'All'
         },
         zh: {
             title: '代理池',
@@ -71,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
             copied: '已复制到剪贴板！',
             exportTitle: '导出代理',
             exportCount: '数量:',
-            copyAll: '复制全部'
+            copyAll: '复制全部',
+            exportAll: '全部'
         }
     };
 
