@@ -1,0 +1,229 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Proxies-30000+-brightgreen?style=for-the-badge" alt="Proxies">
+  <img src="https://img.shields.io/badge/Deploy-Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare">
+</p>
+
+<h1 align="center">🌐 Proxy Pool</h1>
+
+<p align="center">
+  <b>高质量免费代理池 | High Quality Free Proxy Pool</b>
+</p>
+
+<p align="center">
+  自动采集、去重、检测存活、质量评分的代理池系统<br>
+  支持 HTTP / HTTPS / SOCKS4 / SOCKS5 多协议<br>
+  提供美观的 Web 界面和 RESTful API
+</p>
+
+---
+
+## ✨ 功能特性
+
+| 功能 | 描述 |
+|------|------|
+| 🔄 **多源采集** | 自动从多个 GitHub 开源代理源采集代理 |
+| 🧹 **智能去重** | 基于 IP:Port 自动去重，避免重复 |
+| ⚡ **存活检测** | TCP 连接检测，过滤无效代理 |
+| 📊 **质量评分** | 根据延迟自动评估代理质量 (Fast/Good/Slow) |
+| 🌍 **多协议支持** | HTTP、HTTPS、SOCKS4、SOCKS5 |
+| 🎨 **美观界面** | 现代化暗黑风格 Web 仪表盘 |
+| 🌐 **中英双语** | 支持中文/英文界面切换 |
+| 📤 **一键导出** | 支持 TXT/JSON 格式导出 |
+| 🔌 **RESTful API** | 提供完整的 API 接口 |
+
+---
+
+## 🖥️ 界面预览
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/1837620622/proxypool/main/screenshot.png" alt="Screenshot" width="800">
+</p>
+
+---
+
+## 🚀 快速开始
+
+### 本地运行
+
+```bash
+# 克隆项目
+git clone https://github.com/1837620622/proxypool.git
+cd proxypool
+
+# 安装依赖
+npm install
+
+# 启动服务
+npm start
+
+# 访问 http://localhost:3000
+```
+
+### Docker 部署
+
+```bash
+# 构建镜像
+docker build -t proxypool .
+
+# 运行容器
+docker run -d -p 3000:3000 --name proxypool proxypool
+```
+
+### Cloudflare 部署
+
+本项目已适配 Cloudflare Workers / Pages 部署，每小时自动更新代理池。
+
+---
+
+## 📡 API 接口
+
+### 获取代理列表
+
+```
+GET /api/proxies
+```
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| country | string | 国家代码 (如 US, CN, DE) |
+| protocol | string | 协议类型 (http, https, socks4, socks5) |
+| anonymity | string | 匿名度 (elite, anonymous, transparent) |
+
+**示例:**
+```bash
+curl "http://localhost:3000/api/proxies?protocol=socks5&country=US"
+```
+
+### 导出代理
+
+```
+GET /api/export
+```
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| format | string | 导出格式: txt (默认) 或 json |
+| protocol | string | 协议筛选 |
+| speed | string | 速度筛选: fast, good, slow |
+| limit | number | 导出数量 (最大1000) |
+
+**示例:**
+```bash
+# 导出100个快速HTTP代理为TXT
+curl "http://localhost:3000/api/export?protocol=http&speed=fast&limit=100" -o proxies.txt
+
+# 导出为JSON格式
+curl "http://localhost:3000/api/export?format=json&limit=50"
+```
+
+### 获取随机代理
+
+```
+GET /api/random
+```
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| protocol | string | 协议筛选 |
+| speed | string | 速度筛选 |
+| count | number | 数量 (最大50) |
+
+**示例:**
+```bash
+# 获取1个随机快速SOCKS5代理
+curl "http://localhost:3000/api/random?protocol=socks5&speed=fast"
+```
+
+### 获取统计信息
+
+```
+GET /api/stats
+```
+
+### 手动刷新代理池
+
+```
+POST /api/refresh
+```
+
+---
+
+## 📁 项目结构
+
+```
+proxypool/
+├── public/                 # 前端静态资源
+│   ├── index.html          # 主页面
+│   ├── style.css           # 样式文件
+│   └── app.js              # 前端逻辑
+├── server.js               # 后端服务
+├── package.json            # 项目配置
+├── Dockerfile              # Docker配置
+└── README.md               # 项目说明
+```
+
+---
+
+## 🔧 代理源
+
+当前已集成以下开源代理源：
+
+| 源 | 协议 | 地址 |
+|----|------|------|
+| FreeProxy | HTTP/HTTPS/SOCKS4/SOCKS5 | [CharlesPikachu/freeproxy](https://github.com/CharlesPikachu/freeproxy) |
+| OpenProxyList | HTTPS/SOCKS4/SOCKS5 | [roosterkid/openproxylist](https://github.com/roosterkid/openproxylist) |
+| Proxy-Scraper | HTTP/SOCKS4/SOCKS5 | [zebbern/Proxy-Scraper](https://github.com/zebbern/Proxy-Scraper) |
+
+---
+
+## ⚙️ 配置说明
+
+在 `server.js` 中可以调整以下配置：
+
+```javascript
+const QUALITY_CONFIG = {
+    maxLatency: 3000,    // 最大延迟阈值(ms)
+    fastLatency: 500,    // 快速代理阈值(ms)
+    goodLatency: 1000,   // 良好代理阈值(ms)
+    timeout: 1500,       // 检测超时时间(ms)
+    batchSize: 200,      // 并发批次大小
+    batchDelay: 50       // 批次间延迟(ms)
+};
+```
+
+---
+
+## 📊 统计数据
+
+- 🔢 **代理总数**: 30,000+
+- ⚡ **快速代理**: 25,000+ (延迟 < 500ms)
+- 🌍 **覆盖国家**: 50+
+- 🔄 **更新频率**: 每小时
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+## 📬 联系方式
+
+- **微信**: 1837620622 (传康kk)
+- **邮箱**: 2040168455@qq.com
+- **B站/咸鱼**: 万能程序员
+
+---
+
+## 📄 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源协议。
+
+---
+
+<p align="center">
+  <b>⭐ 如果这个项目对你有帮助，请给个 Star！</b>
+</p>
