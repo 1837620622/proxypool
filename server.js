@@ -402,6 +402,14 @@ const hasData = loadData();
 // 如果没有已保存的数据，则从源获取
 if (!hasData) {
     updatePool();
+} else if (eliteProxies.length === 0 && proxyPool.length > 0) {
+    // 如果有数据但没有分类结果，启动后1分钟触发检测
+    setTimeout(() => {
+        if (!isChecking && proxyPool.length > 0) {
+            addLog('INFO', '启动后自动检测开始...');
+            checkProxies();
+        }
+    }, 60000);
 }
 
 // Schedule update every 1 hour

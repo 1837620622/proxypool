@@ -123,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPagesEl = document.getElementById('total-pages');
     const prevPageBtn = document.getElementById('prev-page');
     const nextPageBtn = document.getElementById('next-page');
-    const exportLimit = document.getElementById('export-limit');
     const exportHttpBtn = document.getElementById('export-http');
     const exportHttpsBtn = document.getElementById('export-https');
     const exportSocks4Btn = document.getElementById('export-socks4');
