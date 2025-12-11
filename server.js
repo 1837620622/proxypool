@@ -326,43 +326,26 @@ async function updatePool() {
 
     const proxiesArray = Array.from(uniqueProxies.values());
     updateProgress.total = proxiesArray.length;
-    addLog('INFO', `去重后: ${proxiesArray.length} 个唯一代理，开始存活检测...`);
+    updateProgress.current = proxiesArray.length;
+    addLog('INFO', `去重后: ${proxiesArray.length} 个唯一代理`);
 
-    // 使用优化的批次大小进行并发检测
-    updateProgress.phase = 'checking';
-    const checkedProxies = [];
-    const { batchSize, batchDelay } = QUALITY_CONFIG;
-
-    for (let i = 0; i < proxiesArray.length; i += batchSize) {
-        const batch = proxiesArray.slice(i, i + batchSize);
-        const results = await Promise.all(batch.map(p => checkProxy(p)));
-        checkedProxies.push(...results.filter(p => p.alive));
-        updateProgress.current = Math.min(i + batchSize, proxiesArray.length);
-        
-        // 进度日志
-        if ((i / batchSize) % 10 === 0) {
-            console.log(`检测进度: ${updateProgress.current}/${updateProgress.total} (${Math.round(updateProgress.current/updateProgress.total*100)}%)`);
-        }
-        
-        await new Promise(r => setTimeout(r, batchDelay));
-    }
-
-    // 按质量评分排序（质量高的在前，延迟低的优先）
-    checkedProxies.sort((a, b) => {
-        if (b.quality !== a.quality) return b.quality - a.quality;
-        return a.latency - b.latency;
-    });
-    
-    proxyPool = checkedProxies;
+    // ============================================================
+    // 跳过存活检测，直接将代理同步到前端
+    // 用户可自行验证代理可用性
+    // ============================================================
     updateProgress.phase = 'done';
     
-    // 统计信息
-    const fastCount = proxyPool.filter(p => p.speed === 'fast').length;
-    const goodCount = proxyPool.filter(p => p.speed === 'good').length;
-    const slowCount = proxyPool.filter(p => p.speed === 'slow').length;
+    // 为每个代理添加默认属性
+    proxyPool = proxiesArray.map(p => ({
+        ...p,
+        alive: true,
+        latency: 0,
+        quality: 50,
+        speed: 'unknown',
+        last_checked: new Date()
+    }));
     
-    addLog('INFO', `代理池更新完成！共 ${proxyPool.length} 个活跃代理`);
-    addLog('INFO', `  - 快速: ${fastCount} 个, 良好: ${goodCount} 个, 较慢: ${slowCount} 个`);
+    addLog('INFO', `代理池更新完成！共 ${proxyPool.length} 个代理（未检测，用户自行验证）`);
     
     isUpdating = false;
 }
