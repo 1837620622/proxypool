@@ -2,7 +2,8 @@
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
   <img src="https://img.shields.io/badge/Proxies-30000+-brightgreen?style=for-the-badge" alt="Proxies">
-  <img src="https://img.shields.io/badge/Deploy-Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare">
+  <img src="https://img.shields.io/badge/Deploy-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white" alt="Railway">
+  <img src="https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
 </p>
 
 <h1 align="center">🌐 Proxy Pool</h1>
@@ -71,9 +72,26 @@ docker build -t proxypool .
 docker run -d -p 3000:3000 --name proxypool proxypool
 ```
 
-### Cloudflare 部署
+### 🚂 Railway 部署 (推荐)
 
-本项目已适配 Cloudflare Workers / Pages 部署，每小时自动更新代理池。
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/proxypool)
+
+1. 点击上方按钮或访问 [Railway](https://railway.app)
+2. 选择 **Deploy from GitHub repo**
+3. 连接此仓库 `1837620622/proxypool`
+4. Railway 会自动检测并部署，无需额外配置
+5. 部署完成后获取公网域名
+
+### ▲ Vercel 部署
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/1837620622/proxypool)
+
+1. 点击上方按钮一键部署
+2. 或手动导入 GitHub 仓库
+3. Framework Preset 选择 **Other**
+4. 部署完成后即可访问
+
+> ⚠️ **注意**: Vercel 免费版有执行时间限制，建议使用 Railway 部署以获得更好体验
 
 ---
 
@@ -160,7 +178,11 @@ proxypool/
 │   └── app.js              # 前端逻辑
 ├── server.js               # 后端服务
 ├── package.json            # 项目配置
-├── Dockerfile              # Docker配置
+├── Dockerfile              # Docker 配置
+├── vercel.json             # Vercel 部署配置
+├── railway.json            # Railway 部署配置
+├── nixpacks.toml           # Nixpacks 构建配置
+├── LICENSE                 # MIT 开源协议
 └── README.md               # 项目说明
 ```
 
