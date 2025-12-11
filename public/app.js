@@ -403,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentPage = 1;
         renderTable();
-        updateApiUrl();
     }
 
     // ============================================================
