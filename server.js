@@ -14,12 +14,12 @@ const PORT = process.env.PORT || 3000;
 let proxyPool = [];
 let isUpdating = false;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(express.json());
 
 // 显式处理根路径，确保能够返回 index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
 // ============================================================
