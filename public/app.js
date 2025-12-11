@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPageBtn = document.getElementById('next-page');
     const exportLimit = document.getElementById('export-limit');
     const exportHttpBtn = document.getElementById('export-http');
+    const exportHttpsBtn = document.getElementById('export-https');
     const exportSocks4Btn = document.getElementById('export-socks4');
     const exportSocks5Btn = document.getElementById('export-socks5');
     const exportEliteBtn = document.getElementById('export-elite');
@@ -130,12 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressSection = document.getElementById('progress-section');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
-    const checkBtn = document.getElementById('check-btn');
     const statusCard = document.querySelector('.stat-card.status');
-    
-    // 检测状态
-    let isChecking = false;
-    let checkPollTimer = null;
 
     // ============================================================
     // 初始化
@@ -157,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 事件监听
     // ============================================================
     refreshBtn.addEventListener('click', triggerRefresh);
-    checkBtn.addEventListener('click', triggerCheck);
     countryFilter.addEventListener('change', applyFilters);
     protocolFilter.addEventListener('change', applyFilters);
     speedFilter.addEventListener('change', applyFilters);
@@ -170,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 导出功能
     exportHttpBtn.addEventListener('click', () => window.open('/api/export?protocol=http&limit=all', '_blank'));
+    exportHttpsBtn.addEventListener('click', () => window.open('/api/export?protocol=https&limit=all', '_blank'));
     exportSocks4Btn.addEventListener('click', () => window.open('/api/export?protocol=socks4&limit=all', '_blank'));
     exportSocks5Btn.addEventListener('click', () => window.open('/api/export?protocol=socks5&limit=all', '_blank'));
     exportEliteBtn.addEventListener('click', () => window.open('/api/elite?limit=all', '_blank'));
@@ -270,62 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // 手动检测代理
-    // ============================================================
-    async function triggerCheck() {
-        if (isChecking) return;
-        try {
-            const res = await fetch('/api/check', { method: 'POST' });
-            if (res.ok) {
-                isChecking = true;
-                checkBtn.disabled = true;
-                progressModal.classList.remove('hidden');
-                progressText.textContent = 'Starting check...';
-                progressBarFill.style.width = '0%';
-                // 开始轮询检测进度
-                pollCheckProgress();
-            }
-        } catch (err) {
-            console.error('Failed to start check', err);
-        }
-    }
-
-    // ============================================================
-    // 轮询检测进度
-    // ============================================================
-    function pollCheckProgress() {
-        if (checkPollTimer) clearTimeout(checkPollTimer);
-        
-        fetch('/api/check-progress')
-            .then(res => res.json())
-            .then(data => {
-                if (data.checking) {
-                    const percent = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
-                    progressText.textContent = `Checking: ${data.current}/${data.total} (${percent}%)`;
-                    progressBarFill.style.width = `${percent}%`;
-                    // 继续轮询
-                    checkPollTimer = setTimeout(pollCheckProgress, 500);
-                } else {
-                    // 检测完成
-                    isChecking = false;
-                    checkBtn.disabled = false;
-                    progressModal.classList.add('hidden');
-                    showToast(currentLang === 'zh' ? '检测完成！' : 'Check completed!');
-                    // 刷新数据
-                    fetchData();
-                }
-            })
-            .catch(err => {
-                console.error('Failed to get check progress', err);
-                isChecking = false;
-                checkBtn.disabled = false;
-                progressModal.classList.add('hidden');
-            });
-    }
-
-    // ============================================================
     // 统计更新
     // ============================================================
+    let isChecking = false;
     function updateStats(stats) {
         totalCount.textContent = stats.total || 0;
         eliteCount.textContent = stats.elite || 0;
@@ -346,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('status-icon-i').className = 'ri-loader-4-line';
             statusCard?.classList.remove('updating');
             statusCard?.classList.add('checking');
-            checkBtn.disabled = true;
             
             // 显示检测进度
             if (stats.checkProgress) {
@@ -367,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('status-icon-i').className = 'ri-checkbox-circle-line';
             statusCard?.classList.remove('checking', 'updating');
             refreshBtn.disabled = false;
-            checkBtn.disabled = false;
             progressSection?.classList.add('hidden');
         }
     }

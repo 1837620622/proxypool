@@ -6,6 +6,10 @@ const { HttpsProxyAgent } = require('https-proxy-agent');
 const net = require('net');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
+
+// 数据持久化文件路径
+const DATA_FILE = path.join(process.cwd(), 'proxy_data.json');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +29,43 @@ function addLog(type, message) {
     console.log(log);
     systemLogs.unshift(log);
     if (systemLogs.length > 100) systemLogs.pop();
+}
+
+// ============================================================
+// 数据持久化：保存和加载检测结果
+// ============================================================
+function saveData() {
+    try {
+        const data = {
+            proxyPool,
+            eliteProxies,
+            normalProxies,
+            lastCheckTime,
+            savedAt: new Date().toISOString()
+        };
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        addLog('INFO', `数据已保存到文件，共 ${proxyPool.length} 个代理`);
+    } catch (err) {
+        addLog('ERROR', `保存数据失败: ${err.message}`);
+    }
+}
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+            const data = JSON.parse(raw);
+            proxyPool = data.proxyPool || [];
+            eliteProxies = data.eliteProxies || [];
+            normalProxies = data.normalProxies || [];
+            lastCheckTime = data.lastCheckTime ? new Date(data.lastCheckTime) : null;
+            addLog('INFO', `从文件加载数据成功，共 ${proxyPool.length} 个代理，${eliteProxies.length} 个高速匿名`);
+            return true;
+        }
+    } catch (err) {
+        addLog('ERROR', `加载数据失败: ${err.message}`);
+    }
+    return false;
 }
 
 app.use(express.static(path.join(process.cwd(), 'public')));
@@ -355,8 +396,13 @@ async function updatePool() {
     isUpdating = false;
 }
 
-// Initial update
-updatePool();
+// 启动时先尝试加载已保存的数据
+const hasData = loadData();
+
+// 如果没有已保存的数据，则从源获取
+if (!hasData) {
+    updatePool();
+}
 
 // Schedule update every 1 hour
 cron.schedule('0 * * * *', () => {
@@ -475,6 +521,9 @@ async function checkProxies() {
     const aliveCount = proxyPool.filter(p => p.alive).length;
     lastCheckTime = new Date();
     addLog('INFO', `检测完成！${aliveCount} 个存活，${eliteProxies.length} 个高速匿名，${normalProxies.length} 个普通代理`);
+    
+    // 保存检测结果到文件
+    saveData();
     
     isChecking = false;
 }
