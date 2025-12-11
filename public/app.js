@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             exportTitle: 'Export Proxies',
             exportCount: 'Count:',
             copyAll: 'Copy All',
-            exportAll: 'All'
+            exportAll: 'All',
+            exportFast: 'Fast All'
         },
         zh: {
             title: '代理池',
@@ -73,7 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
             exportTitle: '导出代理',
             exportCount: '数量:',
             copyAll: '复制全部',
-            exportAll: '全部'
+            exportAll: '全部',
+            exportFast: '快速全部'
         }
     };
 
@@ -114,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportTxtBtn = document.getElementById('export-txt');
     const exportJsonBtn = document.getElementById('export-json');
     const copyAllBtn = document.getElementById('copy-all');
+    const exportFastBtn = document.getElementById('export-fast');
     const progressModal = document.getElementById('progress-modal');
     const progressText = document.getElementById('progress-text');
     const progressBarFill = document.getElementById('progress-bar-fill');
@@ -158,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     exportTxtBtn.addEventListener('click', () => exportProxies('txt'));
     exportJsonBtn.addEventListener('click', () => exportProxies('json'));
     copyAllBtn.addEventListener('click', copyAllProxies);
+    exportFastBtn.addEventListener('click', exportFastProxies);
 
     // ============================================================
     // 语言切换
@@ -457,6 +461,13 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.clipboard.writeText(proxyText).then(() => {
             showToast();
         });
+    }
+
+    // ============================================================
+    // 导出全部快速代理
+    // ============================================================
+    function exportFastProxies() {
+        window.open('/api/export?speed=fast&limit=all', '_blank');
     }
 
     // ============================================================

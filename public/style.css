@@ -208,6 +208,15 @@ header {
     transform: none;
 }
 
+.btn-fast {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-fast:hover {
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4) !important;
+}
+
 .btn-icon {
     background: transparent;
     border: none;
