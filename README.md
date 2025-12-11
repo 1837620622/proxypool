@@ -34,7 +34,7 @@
 | 🌍 **多协议支持** | HTTP、HTTPS、SOCKS4、SOCKS5 |
 | 🎨 **美观界面** | 现代化暗黑风格 Web 仪表盘 |
 | 🌐 **中英双语** | 支持中文/英文界面切换 |
-| 📤 **一键导出** | 支持按协议导出 (HTTP/SOCKS4/SOCKS5/高速匿名) |
+| 📤 **一键导出** | 支持按协议导出 (HTTP/HTTPS/SOCKS4/SOCKS5/高速匿名) |
 | 🔌 **RESTful API** | 提供完整的 API 接口，[独立 API 文档页面](./public/api.html) |
 
 ---
@@ -220,9 +220,11 @@ GET /api/normal
 proxypool/
 ├── public/                 # 前端静态资源
 │   ├── index.html          # 主页面
+│   ├── api.html            # API 文档页面
 │   ├── style.css           # 样式文件
 │   └── app.js              # 前端逻辑
 ├── server.js               # 后端服务
+├── proxy_data.json         # 检测结果持久化文件
 ├── package.json            # 项目配置
 ├── Dockerfile              # Docker 配置
 ├── vercel.json             # Vercel 部署配置
@@ -269,7 +271,8 @@ const QUALITY_CONFIG = {
 - ⚡ **快速代理**: 40,000+ 快速可用代理
 - 🌍 **全球覆盖**: 100+ 国家/地区
 - 🔄 **自动更新**: 每小时自动更新代理池
-- 🖱️ **手动检测**: 用户可一键触发存活检测
+- ⏰ **自动检测**: 每 15 分钟自动检测存活性
+- 📱 **响应式设计**: 支持手机端和电脑端访问
 
 ---
 

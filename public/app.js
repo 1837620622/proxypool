@@ -224,8 +224,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTab = 'dashboard';
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
-            e.preventDefault();
             const tab = item.getAttribute('data-tab');
+            
+            // 如果没有 data-tab 属性，说明是外部链接（如 API 文档），不阻止默认行为
+            if (!tab) return;
+            
+            e.preventDefault();
             if (tab === currentTab) return;
             
             // 更新激活状态
