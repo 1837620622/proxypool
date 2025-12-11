@@ -2,6 +2,9 @@
   "name": "proxy-pool",
   "version": "1.0.0",
   "description": "A simple proxy pool with liveness check and web interface",
+  "engines": {
+    "node": "18.x"
+  },
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

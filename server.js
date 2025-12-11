@@ -5,6 +5,7 @@ const { SocksProxyAgent } = require('socks-proxy-agent');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const net = require('net');
 const http = require('http');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,8 +14,13 @@ const PORT = process.env.PORT || 3000;
 let proxyPool = [];
 let isUpdating = false;
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// 显式处理根路径，确保能够返回 index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ============================================================
 // 代理源配置
@@ -393,14 +399,19 @@ app.get('/api/random', (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log('============================================================');
-    console.log('API 接口说明:');
-    console.log('  GET /api/proxies     - 获取代理列表 (JSON)');
-    console.log('  GET /api/stats       - 获取统计信息');
-    console.log('  GET /api/export      - 导出代理 (支持TXT/JSON)');
-    console.log('  GET /api/random      - 获取随机代理');
-    console.log('  POST /api/refresh    - 手动刷新代理池');
-    console.log('============================================================');
-});
+// 导出 app 供 Vercel 使用
+module.exports = app;
+
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log('============================================================');
+        console.log('API 接口说明:');
+        console.log('  GET /api/proxies     - 获取代理列表 (JSON)');
+        console.log('  GET /api/stats       - 获取统计信息');
+        console.log('  GET /api/export      - 导出代理 (支持TXT/JSON)');
+        console.log('  GET /api/random      - 获取随机代理');
+        console.log('  POST /api/refresh    - 手动刷新代理池');
+        console.log('============================================================');
+    });
+}
